@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigsaw Art Puzzle - Modern Edition</title>
-    <!-- Import Modern Font -->
+    <title>Jigsaw Art Puzzle - Modern Edition (Auto-Save & Draggable UI)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -41,7 +40,7 @@
             height: 100vh;
         }
 
-        /* --- LAYAR PEMILIHAN (MENU UTAMA) --- */
+        /* --- LAYAR PEMILIHAN --- */
         #selection-screen {
             display: flex;
             height: 100vh;
@@ -53,7 +52,6 @@
             z-index: 50;
         }
 
-        /* Bagian Kiri: Preview Besar */
         .preview-section {
             flex: 6.5;
             display: flex;
@@ -83,7 +81,6 @@
             transition: opacity 0.3s ease;
         }
 
-        /* Tombol Navigasi Carousel Glassmorphism */
         .carousel-btn {
             position: absolute;
             top: 50%;
@@ -120,7 +117,6 @@
             right: 30px;
         }
 
-        /* Bagian Kanan: Kontrol & Judul */
         .controls-section {
             flex: 3.5;
             background: #ffffff;
@@ -188,12 +184,6 @@
             background-size: 12px auto;
         }
 
-        select:focus,
-        select:hover {
-            border-color: var(--primary);
-        }
-
-        /* Styling Custom Upload Button */
         input[type="file"] {
             display: none;
         }
@@ -239,7 +229,7 @@
             box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
         }
 
-        /* --- LAYAR PERMAINAN (GAME SCREEN) --- */
+        /* --- LAYAR PERMAINAN --- */
         #game-screen {
             display: none;
             position: relative;
@@ -251,7 +241,6 @@
             transition: background-color 0.4s ease;
         }
 
-        /* --- TEMA GELAP UNTUK LAYAR PERMAINAN --- */
         #game-screen.dark-theme {
             --bg-color: #0b1120;
             --dot-color: rgba(255, 255, 255, 0.08);
@@ -281,13 +270,6 @@
             border-color: rgba(255, 255, 255, 0.25);
         }
 
-        .theme-toggle-btn:hover {
-            background: var(--text-main);
-            color: var(--bg-color);
-            border-color: var(--text-main);
-        }
-
-        /* UI Melayang di Game */
         .floating-ui {
             position: absolute;
             top: 24px;
@@ -308,6 +290,12 @@
             left: 24px;
             flex-direction: column;
             align-items: flex-start;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .top-left-ui:active {
+            cursor: grabbing;
         }
 
         .top-right-ui {
@@ -361,7 +349,7 @@
             height: 100vh;
         }
 
-        /* --- MODAL GAMBAR UTUH --- */
+        /* --- MODAL --- */
         #full-image-modal {
             display: none;
             position: absolute;
@@ -410,7 +398,6 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* --- MODAL MENANG --- */
         #win-modal {
             display: none;
             position: absolute;
@@ -473,7 +460,6 @@
             transform: scale(1.05);
         }
 
-        /* Responsive penyesuaian */
         @media (max-width: 900px) {
             #selection-screen {
                 flex-direction: column;
@@ -500,10 +486,8 @@
 </head>
 
 <body>
-
-    <!-- LAYAR PEMILIHAN (MENU UTAMA) -->
+    <!-- LAYAR PEMILIHAN -->
     <div id="selection-screen">
-        <!-- Panel Kiri: Preview -->
         <div class="preview-section">
             <div class="image-preview-container">
                 <button class="carousel-btn" id="prev-btn">&#10094;</button>
@@ -512,7 +496,6 @@
             </div>
         </div>
 
-        <!-- Panel Kanan: Setting & Start -->
         <div class="controls-section">
             <div class="selection-title">Koleksi Jigsaw</div>
             <h2 class="image-title" id="image-title">Loading...</h2>
@@ -542,24 +525,19 @@
 
     <!-- LAYAR PERMAINAN -->
     <div id="game-screen">
-
-        <!-- UI Melayang Kiri Atas -->
         <div class="floating-ui top-left-ui">
             <div class="timer" id="timer">00:00</div>
             <img id="thumb-img" class="thumb-preview" src="" title="Klik untuk lihat referensi" alt="Thumbnail">
         </div>
 
-        <!-- UI Melayang Kanan Atas -->
         <div class="floating-ui top-right-ui">
             <button class="theme-toggle-btn" id="theme-toggle-btn" title="Ganti Tema"><i
                     class="fa-solid fa-moon"></i></button>
             <button class="back-btn" id="back-btn">Kembali</button>
         </div>
 
-        <!-- Canvas Full Screen -->
         <canvas id="puzzle-canvas"></canvas>
 
-        <!-- Pesan Menang -->
         <div id="win-modal">
             <h2>Luar Biasa!</h2>
             <p id="win-time">Waktu penyelesaian: 00:00</p>
@@ -567,39 +545,24 @@
         </div>
     </div>
 
-    <!-- MODAL GAMBAR UTUH -->
     <div id="full-image-modal">
         <img id="full-preview-img" src="" alt="Full Reference">
         <div class="close-modal-hint">Klik di mana saja untuk kembali bermain</div>
     </div>
 
     <script>
-        // --- DATA GAMBAR ---
         let puzzleImages = [
-            {
-                title: "The Starry Night\nVincent van Gogh",
-                url: "images/starynight.jpg"
-            },
-            {
-                title: "Mona Lisa\nLeonardo da Vinci",
-                url: "images/monalisa.jpg"
-            },
-            {
-                title: "The Great Wave\nHokusai",
-                url: "images/greatwave.jpg"
-            },
-            {
-                title: "Wanderer above Fog\nCaspar David Friedrich",
-                url: "images/fog.jpg"
-            }
+            { title: "The Starry Night\nVincent van Gogh", url: "images/starynight.jpg" },
+            { title: "Mona Lisa\nLeonardo da Vinci", url: "images/monalisa.jpg" },
+            { title: "The Great Wave\nHokusai", url: "images/greatwave.jpg" },
+            { title: "Wanderer above Fog\nCaspar David Friedrich", url: "images/fog.jpg" }
         ];
 
         let currentImageIndex = 0;
-        let customImageIndex = -1; // indeks gambar unggahan pengguna di puzzleImages (-1 = belum ada)
+        let customImageIndex = -1;
         let pieceCount = 100;
         let imgObj = new Image();
 
-        // Elemen UI
         const selectionScreen = document.getElementById('selection-screen');
         const previewImg = document.getElementById('preview-img');
         const imageTitle = document.getElementById('image-title');
@@ -620,60 +583,149 @@
         const fullImageModal = document.getElementById('full-image-modal');
         const fullPreviewImg = document.getElementById('full-preview-img');
 
-        // State Puzzle
         let boardWidth, boardHeight, boardX, boardY;
         let pieces = [];
         let activePieces = [];
         let dragOffsets = [];
         let timerInterval = null;
         let secondsElapsed = 0;
+        let needsRedraw = false; // FLAG untuk optimasi render
+        let uiHasMoved = false; // Membedakan 'klik' thumbnail dan 'geser' ui
 
-        // --- MENU LOGIC ---
+        // --- MANAJEMEN AUTO-SAVE ---
+        function saveGameState() {
+            if (pieces.length === 0) return;
+            const state = {
+                currentImageIndex,
+                isCustom: customImageIndex !== -1 && customImageIndex === currentImageIndex,
+                pieceCount,
+                secondsElapsed,
+                boardWidth, boardHeight, boardX, boardY,
+                piecesData: pieces.map(p => ({
+                    id: p.id,
+                    groupId: p.groupId,
+                    r: p.r,
+                    c: p.c,
+                    currentX: p.currentX,
+                    currentY: p.currentY,
+                    edges: p.edges // edges sekarang ikut disimpan
+                }))
+            };
+            try {
+                localStorage.setItem('jigsawSaveState', JSON.stringify(state));
+                if (state.isCustom) {
+                    localStorage.setItem('jigsawCustomImg', puzzleImages[customImageIndex].url);
+                }
+            } catch (e) {
+                console.warn("Gagal menyimpan progress (Quota melebihi batas)");
+            }
+        }
+
+        function loadGameState() {
+            try {
+                const save = localStorage.getItem('jigsawSaveState');
+                if (!save) return false;
+                const state = JSON.parse(save);
+
+                if (state.isCustom) {
+                    const customImg = localStorage.getItem('jigsawCustomImg');
+                    if (customImg) {
+                        if (customImageIndex === -1) {
+                            puzzleImages.push({ title: "Custom Image\nUnggahan Anda", url: customImg });
+                            customImageIndex = puzzleImages.length - 1;
+                        } else {
+                            puzzleImages[customImageIndex].url = customImg;
+                        }
+                        currentImageIndex = customImageIndex;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    currentImageIndex = state.currentImageIndex;
+                }
+
+                pieceCount = state.pieceCount;
+                secondsElapsed = state.secondsElapsed;
+                boardWidth = state.boardWidth;
+                boardHeight = state.boardHeight;
+                boardX = state.boardX;
+                boardY = state.boardY;
+
+                // Setup UI ke mode in-game
+                selectionScreen.style.display = 'none';
+                gameScreen.style.display = 'block';
+                const currentData = puzzleImages[currentImageIndex];
+
+                // Pastikan thumbnail dipasang
+                thumbImg.src = currentData.url;
+                fullPreviewImg.src = currentData.url;
+
+                resizeCanvas();
+                startTimer(secondsElapsed); // Lanjutkan timer
+
+                imgObj = new Image();
+                imgObj.src = currentData.url;
+                imgObj.onload = () => {
+                    let cols, rows;
+                    if (pieceCount === 100) { cols = 10; rows = 10; }
+                    else if (pieceCount === 200) { cols = 16; rows = 12; }
+                    else if (pieceCount === 300) { cols = 20; rows = 15; }
+
+                    const pieceW = boardWidth / cols;
+                    const pieceH = boardHeight / rows;
+
+                    // Bangun ulang Path2D dan kepingan dari data memori
+                    pieces = state.piecesData.map(pData => {
+                        const path = createPiecePath(pieceW, pieceH, pData.edges);
+                        return {
+                            id: pData.id, groupId: pData.groupId, r: pData.r, c: pData.c, pieceW, pieceH,
+                            currentX: pData.currentX, currentY: pData.currentY, edges: pData.edges, path
+                        };
+                    });
+
+                    activePieces = [];
+                    dragOffsets = [];
+                    needsRedraw = true;
+                };
+                return true;
+            } catch (e) {
+                console.error("Gagal memuat save data", e);
+                return false;
+            }
+        }
+
+        // --- LOGIKA MENU ---
         function updateSelectionUI() {
-            previewImg.style.opacity = 0; // Transisi halus
+            previewImg.style.opacity = 0;
             setTimeout(() => {
                 const currentData = puzzleImages[currentImageIndex];
                 previewImg.src = currentData.url;
-                // Ganti newline \n menjadi <br> agar rapi di UI
                 imageTitle.innerHTML = currentData.title.replace('\n', '<br>');
                 previewImg.style.opacity = 1;
             }, 200);
         }
 
-        prevBtn.addEventListener('click', () => {
-            currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) % puzzleImages.length;
-            updateSelectionUI();
-        });
-
-        nextBtn.addEventListener('click', () => {
-            currentImageIndex = (currentImageIndex + 1) % puzzleImages.length;
-            updateSelectionUI();
-        });
+        prevBtn.addEventListener('click', () => { currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) % puzzleImages.length; updateSelectionUI(); });
+        nextBtn.addEventListener('click', () => { currentImageIndex = (currentImageIndex + 1) % puzzleImages.length; updateSelectionUI(); });
 
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function (event) {
-                    // Perbarui teks label saja (elemen input tidak pernah dihancurkan)
                     const labelText = file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name;
                     document.getElementById('upload-label-text').textContent = `✓ ${labelText}`;
-
                     if (customImageIndex === -1) {
-                        // Belum ada gambar unggahan sebelumnya, tambahkan baru
                         puzzleImages.push({ title: "Custom Image\nUnggahan Anda", url: event.target.result });
                         customImageIndex = puzzleImages.length - 1;
                     } else {
-                        // Sudah ada gambar unggahan sebelumnya, ganti isinya
                         puzzleImages[customImageIndex].url = event.target.result;
                     }
-
                     currentImageIndex = customImageIndex;
                     updateSelectionUI();
                 };
                 reader.readAsDataURL(file);
             }
-            // Reset value agar memilih file yang sama persis tetap memicu event 'change'
             e.target.value = '';
         });
 
@@ -682,8 +734,11 @@
             selectionScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             const currentData = puzzleImages[currentImageIndex];
+
+            // Set source saat permainan baru dimulai
             thumbImg.src = currentData.url;
             fullPreviewImg.src = currentData.url;
+
             initGame();
         });
 
@@ -692,37 +747,40 @@
             gameScreen.style.display = 'none';
             selectionScreen.style.display = 'flex';
             winModal.style.display = 'none';
+            // Bersihkan memori progress saat memilih kembali ke menu utama
+            localStorage.removeItem('jigsawSaveState');
         });
 
-        // Ganti tema layar permainan (terang <-> gelap)
         themeToggleBtn.addEventListener('click', () => {
             const isDark = gameScreen.classList.toggle('dark-theme');
-            themeToggleBtn.innerHTML = isDark
-                ? '<i class="fa-solid fa-sun"></i>'
-                : '<i class="fa-solid fa-moon"></i>';
+            themeToggleBtn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            needsRedraw = true;
         });
 
-        // Buka modal saat thumbnail ditekan
-        thumbImg.addEventListener('click', () => { fullImageModal.style.display = 'flex'; });
+        // Event listener thumbnail yang benar
+        thumbImg.addEventListener('click', () => {
+            if (uiHasMoved) return; // Mencegah terbuka jika tidak sengaja terklik saat drag
+            fullImageModal.style.display = 'flex';
+        });
 
-        // Tutup modal jika diklik DI MANA SAJA
         fullImageModal.addEventListener('click', () => { fullImageModal.style.display = 'none'; });
 
-        // --- PUZZLE CORE LOGIC ---
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            needsRedraw = true;
         }
 
-        window.addEventListener('resize', () => {
-            if (gameScreen.style.display === 'block') { resizeCanvas(); render(); }
-        });
+        window.addEventListener('resize', () => { if (gameScreen.style.display === 'block') resizeCanvas(); });
 
-        function startTimer() {
+        function startTimer(initialSeconds = 0) {
             clearInterval(timerInterval);
-            secondsElapsed = 0;
+            secondsElapsed = initialSeconds;
             updateTimerDisplay();
-            timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                updateTimerDisplay();
+            }, 1000);
         }
 
         function updateTimerDisplay() {
@@ -741,10 +799,39 @@
             imgObj.onload = setupPuzzleAndScatter;
             imgObj.onerror = () => {
                 clearInterval(timerInterval);
-                alert('Gagal memuat gambar dari: ' + currentData.url + '\nPastikan file gambar tersedia di path tersebut.');
+                alert('Gagal memuat gambar.');
                 gameScreen.style.display = 'none';
                 selectionScreen.style.display = 'flex';
             };
+        }
+
+        function createPiecePath(w, h, edges) {
+            const tabSize = Math.min(w, h) * 0.26;
+            const path = new Path2D();
+            path.moveTo(0, 0);
+            drawJigsawEdgePath(path, 0, 0, w, 0, edges.top, tabSize);
+            drawJigsawEdgePath(path, w, 0, w, h, edges.right, tabSize);
+            drawJigsawEdgePath(path, w, h, 0, h, edges.bottom, tabSize);
+            drawJigsawEdgePath(path, 0, h, 0, 0, edges.left, tabSize);
+            path.closePath();
+            return path;
+        }
+
+        function drawJigsawEdgePath(path, x1, y1, x2, y2, tabDir, tabSize) {
+            if (tabDir === 0) { path.lineTo(x2, y2); return; }
+            const dx = x2 - x1, dy = y2 - y1;
+            const dist = Math.hypot(dx, dy);
+            const angle = Math.atan2(dy, dx);
+            const nx = -Math.sin(angle) * tabDir, ny = Math.cos(angle) * tabDir;
+            const ux = Math.cos(angle), uy = Math.sin(angle);
+            const cp1x = x1 + ux * dist * 0.38, cp1y = y1 + uy * dist * 0.38;
+            const cp2x = x1 + ux * dist * 0.62, cp2y = y1 + uy * dist * 0.62;
+            const tabCenterX = x1 + ux * dist * 0.5 + nx * tabSize;
+            const tabCenterY = y1 + uy * dist * 0.5 + ny * tabSize;
+            path.lineTo(cp1x, cp1y);
+            path.bezierCurveTo(cp1x + nx * tabSize * 0.8, cp1y + ny * tabSize * 0.8, tabCenterX - ux * tabSize * 0.6, tabCenterY, tabCenterX, tabCenterY);
+            path.bezierCurveTo(tabCenterX + ux * tabSize * 0.6, tabCenterY, cp2x + nx * tabSize * 0.8, cp2y + ny * tabSize * 0.8, cp2x, cp2y);
+            path.lineTo(x2, y2);
         }
 
         function setupPuzzleAndScatter() {
@@ -757,8 +844,7 @@
             else if (pieceCount === 200) { cols = 16; rows = 12; }
             else if (pieceCount === 300) { cols = 20; rows = 15; }
 
-            // Menyesuaikan ukuran maksimal board agar tidak tertutup UI atas (margin top)
-            const paddingHorizontal = canvas.width * 0.15; // Jarak tepi
+            const paddingHorizontal = canvas.width * 0.15;
             const maxBoardW = canvas.width - paddingHorizontal;
             const maxBoardH = canvas.height * 0.65;
             const imgAspect = imgObj.width / imgObj.height;
@@ -769,7 +855,6 @@
                 boardWidth = maxBoardW; boardHeight = maxBoardW / imgAspect;
             }
 
-            // Posisikan kotak target di tengah, agak ke bawah sedikit menghindari UI melayang
             boardX = (canvas.width - boardWidth) / 2;
             boardY = ((canvas.height - boardHeight) / 2) + 20;
 
@@ -788,83 +873,29 @@
                         left: c === 0 ? 0 : -verticalEdges[r][c - 1]
                     };
 
-                    const tileCanvas = createPieceTile(imgObj, r, c, rows, cols, pieceW, pieceH, edges, boardWidth, boardHeight);
+                    const path = createPiecePath(pieceW, pieceH, edges);
 
-                    const padding = Math.min(pieceW, pieceH) * 0.26;
-
-                    // Area acak dibatasi agar kepingan tidak ngumpet di pojok kiri atas (bawah UI melayang)
                     const randomX = Math.random() * (canvas.width - pieceW);
                     const randomY = Math.max(150, Math.random() * (canvas.height - pieceH));
-
                     const pId = r * cols + c;
 
                     pieces.push({
-                        id: pId,
-                        groupId: pId,
-                        r, c, pieceW, pieceH,
-                        currentX: randomX, currentY: randomY,
-                        padding, tileCanvas
+                        id: pId, groupId: pId, r, c, pieceW, pieceH,
+                        currentX: randomX, currentY: randomY, edges, path // Menyimpan edges
                     });
                 }
             }
             pieces.sort(() => Math.random() - 0.5);
-            render();
+            needsRedraw = true;
+
+            // Simpan saat puzzle selesai dibuat/diacak
+            saveGameState();
         }
 
-        function createPieceTile(image, r, c, rows, cols, w, h, edges, boardW, boardH) {
-            const tabSize = Math.min(w, h) * 0.26;
-            const padding = tabSize;
-
-            const tile = document.createElement('canvas');
-            tile.width = w + padding * 2;
-            tile.height = h + padding * 2;
-            const tCtx = tile.getContext('2d');
-
-            tCtx.save();
-            tCtx.beginPath();
-            tCtx.translate(padding, padding);
-            tCtx.moveTo(0, 0);
-
-            drawJigsawEdge(tCtx, 0, 0, w, 0, edges.top, tabSize);
-            drawJigsawEdge(tCtx, w, 0, w, h, edges.right, tabSize);
-            drawJigsawEdge(tCtx, w, h, 0, h, edges.bottom, tabSize);
-            drawJigsawEdge(tCtx, 0, h, 0, 0, edges.left, tabSize);
-
-            tCtx.closePath();
-            tCtx.clip();
-
-            // Render tekstur (diperbaiki agar tidak bolong putih)
-            tCtx.drawImage(image, -c * w, -r * h, boardW, boardH);
-
-            tCtx.strokeStyle = "rgba(0, 0, 0, 0.3)";
-            tCtx.lineWidth = 1.5;
-            tCtx.stroke();
-            tCtx.restore();
-
-            return tile;
-        }
-
-        function drawJigsawEdge(ctx, x1, y1, x2, y2, tabDir, tabSize) {
-            if (tabDir === 0) { ctx.lineTo(x2, y2); return; }
-            const dx = x2 - x1, dy = y2 - y1;
-            const dist = Math.hypot(dx, dy);
-            const angle = Math.atan2(dy, dx);
-            const nx = -Math.sin(angle) * tabDir, ny = Math.cos(angle) * tabDir;
-            const ux = Math.cos(angle), uy = Math.sin(angle);
-            const cp1x = x1 + ux * dist * 0.38, cp1y = y1 + uy * dist * 0.38;
-            const cp2x = x1 + ux * dist * 0.62, cp2y = y1 + uy * dist * 0.62;
-            const tabCenterX = x1 + ux * dist * 0.5 + nx * tabSize;
-            const tabCenterY = y1 + uy * dist * 0.5 + ny * tabSize;
-            ctx.lineTo(cp1x, cp1y);
-            ctx.bezierCurveTo(cp1x + nx * tabSize * 0.8, cp1y + ny * tabSize * 0.8, tabCenterX - ux * tabSize * 0.6, tabCenterY, tabCenterX, tabCenterY);
-            ctx.bezierCurveTo(tabCenterX + ux * tabSize * 0.6, tabCenterY, cp2x + nx * tabSize * 0.8, cp2y + ny * tabSize * 0.8, cp2x, cp2y);
-            ctx.lineTo(x2, y2);
-        }
-
+        // FUNGSI RENDER DIOPTIMISASI
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Area Target Tipis (Garis Putus-Putus Bantuan)
             ctx.strokeStyle = "rgba(100, 116, 139, 0.4)";
             ctx.lineWidth = 2;
             ctx.setLineDash([8, 8]);
@@ -874,24 +905,39 @@
             for (let p of pieces) {
                 ctx.save();
                 let isDragging = activePieces.find(ap => ap.id === p.id);
+                ctx.translate(p.currentX, p.currentY);
+
                 if (isDragging) {
-                    ctx.shadowColor = "rgba(0,0,0,0.4)";
+                    ctx.shadowColor = "rgba(0,0,0,0.5)";
                     ctx.shadowBlur = 15;
                     ctx.shadowOffsetX = 8;
                     ctx.shadowOffsetY = 8;
-                } else {
-                    // Bayangan halus default untuk kepingan di bawah
-                    ctx.shadowColor = "rgba(0,0,0,0.15)";
-                    ctx.shadowBlur = 4;
-                    ctx.shadowOffsetX = 2;
-                    ctx.shadowOffsetY = 2;
+                    ctx.fillStyle = "#fff";
+                    ctx.fill(p.path);
                 }
-                ctx.drawImage(p.tileCanvas, p.currentX - p.padding, p.currentY - p.padding);
+
+                ctx.save();
+                ctx.clip(p.path);
+                ctx.drawImage(imgObj, -p.c * p.pieceW, -p.r * p.pieceH, boardWidth, boardHeight);
+                ctx.restore();
+
+                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = "rgba(0, 0, 0, 0.35)";
+                ctx.stroke(p.path);
+
                 ctx.restore();
             }
         }
 
-        // --- CONTROLS ---
+        // GAME LOOP
+        function gameLoop() {
+            if (needsRedraw && gameScreen.style.display === 'block') {
+                render();
+                needsRedraw = false;
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
         function getPointerPos(e) {
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -900,9 +946,7 @@
         }
 
         function onPointerDown(e) {
-            // Hindari pencegahan klik pada tombol UI melayang
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'IMG') return;
-
+            if (e.target.closest('.floating-ui')) return;
             if (e.cancelable) e.preventDefault();
 
             const pos = getPointerPos(e);
@@ -910,8 +954,7 @@
 
             for (let i = pieces.length - 1; i >= 0; i--) {
                 const p = pieces[i];
-                if (pos.x >= p.currentX - p.padding * 0.5 && pos.x <= p.currentX + p.pieceW + p.padding * 0.5 &&
-                    pos.y >= p.currentY - p.padding * 0.5 && pos.y <= p.currentY + p.pieceH + p.padding * 0.5) {
+                if (ctx.isPointInPath(p.path, pos.x - p.currentX, pos.y - p.currentY)) {
                     clickedPiece = p;
                     break;
                 }
@@ -926,7 +969,7 @@
                     dx: pos.x - p.currentX,
                     dy: pos.y - p.currentY
                 }));
-                render();
+                needsRedraw = true;
             }
         }
 
@@ -941,7 +984,7 @@
                     p.currentY = pos.y - offset.dy;
                 }
             });
-            render();
+            needsRedraw = true;
         }
 
         function onPointerUp() {
@@ -956,9 +999,7 @@
                 for (let pB of pieces) {
                     if (pA.groupId === pB.groupId) continue;
 
-                    const isNeighbor = (Math.abs(pA.r - pB.r) === 1 && pA.c === pB.c) ||
-                        (Math.abs(pA.c - pB.c) === 1 && pA.r === pB.r);
-
+                    const isNeighbor = (Math.abs(pA.r - pB.r) === 1 && pA.c === pB.c) || (Math.abs(pA.c - pB.c) === 1 && pA.r === pB.r);
                     if (!isNeighbor) continue;
 
                     const expectedDx = (pA.c - pB.c) * pA.pieceW;
@@ -971,13 +1012,7 @@
                         const shiftY = (pB.currentY + expectedDy) - pA.currentY;
                         const newGroupId = pB.groupId;
 
-                        activePieces.forEach(p => {
-                            p.currentX += shiftX;
-                            p.currentY += shiftY;
-                            p.groupId = newGroupId;
-                        });
-
-                        // Mainkan suara snap (opsional, jika Anda ingin menambahkan efek audio)
+                        activePieces.forEach(p => { p.currentX += shiftX; p.currentY += shiftY; p.groupId = newGroupId; });
                         snapped = true;
                         break;
                     }
@@ -986,7 +1021,11 @@
 
             activePieces = [];
             dragOffsets = [];
-            render();
+            needsRedraw = true;
+
+            // Simpan posisi setiap kali mouse/sentuhan diangkat
+            saveGameState();
+
             checkWinCondition();
         }
 
@@ -997,30 +1036,88 @@
 
                 if (allSame) {
                     clearInterval(timerInterval);
-
-                    // Center puzzle
                     const head = pieces.find(p => p.r === 0 && p.c === 0);
                     const shiftX = boardX - head.currentX;
                     const shiftY = boardY - head.currentY;
                     pieces.forEach(p => { p.currentX += shiftX; p.currentY += shiftY; });
-                    render();
+                    needsRedraw = true;
 
                     document.getElementById('win-time').textContent = `Waktu Anda: ${timerEl.textContent}`;
                     winModal.style.display = 'block';
+
+                    // Bersihkan memori progress karena permainan sudah selesai
+                    localStorage.removeItem('jigsawSaveState');
                 }
             }
         }
 
+        // --- LOGIKA DRAG PANEL UI ---
+        const topLeftUI = document.querySelector('.top-left-ui');
+        let isUIDragging = false;
+        let uiDragOffsetX = 0;
+        let uiDragOffsetY = 0;
+
+        function onUIDragStart(e) {
+            isUIDragging = true;
+            uiHasMoved = false;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const rect = topLeftUI.getBoundingClientRect();
+            uiDragOffsetX = clientX - rect.left;
+            uiDragOffsetY = clientY - rect.top;
+        }
+
+        function onUIDragMove(e) {
+            if (!isUIDragging) return;
+            uiHasMoved = true;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            let newX = clientX - uiDragOffsetX;
+            let newY = clientY - uiDragOffsetY;
+            newX = Math.max(0, Math.min(window.innerWidth - topLeftUI.offsetWidth, newX));
+            newY = Math.max(0, Math.min(window.innerHeight - topLeftUI.offsetHeight, newY));
+
+            topLeftUI.style.left = `${newX}px`;
+            topLeftUI.style.top = `${newY}px`;
+            topLeftUI.style.right = 'auto';
+        }
+
+        function onUIDragEnd() {
+            isUIDragging = false;
+        }
+
+        topLeftUI.addEventListener('mousedown', onUIDragStart);
+        window.addEventListener('mousemove', onUIDragMove);
+        window.addEventListener('mouseup', onUIDragEnd);
+        topLeftUI.addEventListener('touchstart', onUIDragStart, { passive: false });
+        window.addEventListener('touchmove', onUIDragMove, { passive: false });
+        window.addEventListener('touchend', onUIDragEnd);
+
+        // --- EVENT LISTENERS TAMBAHAN ---
         playAgainBtn.addEventListener('click', initGame);
         canvas.addEventListener('mousedown', onPointerDown);
         window.addEventListener('mousemove', onPointerMove);
         window.addEventListener('mouseup', onPointerUp);
-
         canvas.addEventListener('touchstart', onPointerDown, { passive: false });
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
 
-        updateSelectionUI();
+        // Simpan timer secara periodik saat tab akan disembunyikan/ditutup
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && gameScreen.style.display === 'block') {
+                saveGameState();
+            }
+        });
+
+        // --- INISIALISASI AWAL ---
+        // Coba muat memori lokal. Jika tidak ada memori (false), maka muat layar seleksi seperti biasa.
+        if (!loadGameState()) {
+            updateSelectionUI();
+        }
+
+        // Memulai Render Loop
+        requestAnimationFrame(gameLoop);
     </script>
 </body>
 
