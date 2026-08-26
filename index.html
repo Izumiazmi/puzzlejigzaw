@@ -84,7 +84,6 @@
             flex-direction: column;
             gap: 10px;
             pointer-events: none;
-            /* Agar tidak ganggu puzzle di baliknya jika meleset */
         }
 
         .notification-item {
@@ -103,7 +102,6 @@
             gap: 15px;
             animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             pointer-events: auto;
-            /* Agar tombol close bisa diklik */
         }
 
         .notification-item .close-notif {
@@ -855,8 +853,8 @@
 
                 <!-- Input Room Dikosongkan Default-nya -->
                 <div class="input-group">
-                    <label for="room-input">Kode Room</label>
-                    <input type="text" id="room-input" class="form-control" placeholder="Masukan pin untuk bergabung"
+                    <label for="room-input">Kode Room (Berikan ke Teman)</label>
+                    <input type="text" id="room-input" class="form-control" placeholder="Kosongkan untuk buat room baru"
                         autocomplete="off" style="font-weight: 700; color: #2563eb; letter-spacing: 1px;">
                 </div>
 
@@ -969,7 +967,7 @@
         const playerColor = playerColors[Math.floor(Math.random() * playerColors.length)];
         let roomRef = null;
         let cursors = {};
-        let knownPlayers = []; // Untuk melacak siapa saja yang sudah masuk demi notifikasi
+        let knownPlayers = [];
 
         let savedPlayerName = localStorage.getItem('jigsawPlayerName') || '';
 
@@ -989,7 +987,6 @@
 
             notif.querySelector('.close-notif').onclick = () => notif.remove();
 
-            // Hilang otomatis setelah 4 detik
             setTimeout(() => {
                 if (notif.parentNode) notif.remove();
             }, 4000);
@@ -1052,7 +1049,7 @@
         let needsRedraw = false;
         let uiHasMoved = false;
 
-        // --- MANAJEMEN AUTO-SAVE ---
+        // --- MANAJEMEN AUTO-SAVE (MENGGUNAKAN RELATIVE KOORDINAT) ---
         function saveGameState() {
             if (pieces.length === 0) return;
             const state = {
@@ -1064,7 +1061,9 @@
                 boardWidth, boardHeight, boardX, boardY,
                 piecesData: pieces.map(p => ({
                     id: p.id, groupId: p.groupId, r: p.r, c: p.c,
-                    currentX: p.currentX, currentY: p.currentY, edges: p.edges
+                    rx: (p.currentX - boardX) / boardWidth, // Simpan sebagai koordinat relatif
+                    ry: (p.currentY - boardY) / boardHeight,
+                    edges: p.edges
                 }))
             };
             try {
@@ -1095,11 +1094,9 @@
                 pieceCount = state.pieceCount;
                 activeRoomPin = state.activeRoomPin;
                 secondsElapsed = state.secondsElapsed;
-                boardWidth = state.boardWidth;
-                boardHeight = state.boardHeight;
-                boardX = state.boardX;
-                boardY = state.boardY;
 
+                // Jangan gunakan boardWidth dan Height dari save lama jika layar di-resize,
+                // biar resizeCanvas menghitung ulang skala barunya. Tapi kita butuh fallback sementara.
                 displayRoomCode.textContent = activeRoomPin || 'Offline';
 
                 selectionScreen.style.display = 'none';
@@ -1120,21 +1117,37 @@
                     else if (pieceCount === 200) { cols = 16; rows = 12; }
                     else if (pieceCount === 300) { cols = 20; rows = 15; }
 
+                    // Perhitungan Board dan Piece Baru sesuai layar saat ini
+                    const paddingHorizontal = canvas.width * 0.15;
+                    const maxBoardW = canvas.width - paddingHorizontal;
+                    const maxBoardH = canvas.height * 0.65;
+                    const imgAspect = imgObj.width / imgObj.height;
+
+                    if (maxBoardW / maxBoardH > imgAspect) { boardHeight = maxBoardH; boardWidth = maxBoardH * imgAspect; }
+                    else { boardWidth = maxBoardW; boardHeight = maxBoardW / imgAspect; }
+
+                    boardX = (canvas.width - boardWidth) / 2;
+                    boardY = ((canvas.height - boardHeight) / 2) + 20;
+
                     const pieceW = boardWidth / cols;
                     const pieceH = boardHeight / rows;
 
                     pieces = state.piecesData.map(pData => {
                         const path = createPiecePath(pieceW, pieceH, pData.edges);
+                        // Konversi relatif kembali ke absolut menggunakan layar baru
+                        let currX = pData.rx !== undefined ? boardX + (pData.rx * boardWidth) : (pData.currentX || 0);
+                        let currY = pData.ry !== undefined ? boardY + (pData.ry * boardHeight) : (pData.currentY || 0);
+
                         return {
                             id: pData.id, groupId: pData.groupId, r: pData.r, c: pData.c, pieceW, pieceH,
-                            currentX: pData.currentX, currentY: pData.currentY, edges: pData.edges, path
+                            currentX: currX, currentY: currY, edges: pData.edges, path
                         };
                     });
 
                     activePieces = [];
                     dragOffsets = [];
                     needsRedraw = true;
-                    if (activeRoomPin) joinMultiplayerRoom(); // Lanjut Firebase setelah dimuat
+                    if (activeRoomPin) joinMultiplayerRoom();
                 };
                 return true;
             } catch (e) { return false; }
@@ -1178,7 +1191,6 @@
             const inputPin = roomInput.value.trim().toUpperCase();
 
             if (inputPin !== '') {
-                // VALIDASI: Cek Firebase jika pemain memasukkan kode
                 db.ref(`rooms/${inputPin}`).once('value', (snap) => {
                     if (!snap.exists()) {
                         alert("Room tidak ditemukan. Periksa kembali Kode Room.");
@@ -1189,12 +1201,10 @@
                         return;
                     }
 
-                    // Jika valid, lanjutkan masuk
                     activeRoomPin = inputPin;
                     proceedToGame();
                 });
             } else {
-                // KOSONG: Generate room baru
                 activeRoomPin = generateRoomCode();
                 proceedToGame();
             }
@@ -1218,11 +1228,9 @@
                 roomRef = db.ref(`rooms/${activeRoomPin}`);
                 let isInitialCursorLoad = true;
 
-                // 1. Atur Kursor & Nama Pemain
                 roomRef.child('cursors').once('value', (snapshot) => {
                     const cursorsData = snapshot.val() || {};
 
-                    // Hitung urutan Player
                     if (!savedPlayerName) {
                         let count = Object.keys(cursorsData).length;
                         if (!cursorsData[playerId]) count += 1;
@@ -1238,11 +1246,10 @@
                     myCursorRef.update({
                         name: savedPlayerName,
                         color: playerColor,
-                        x: -100, y: -100
+                        rx: -1, ry: -1 // Koordinat kursor relatif
                     });
                 });
 
-                // Sinkronkan Toggle Kunci Room & Cek Owner
                 roomRef.child('owner').on('value', (snap) => {
                     const ownerId = snap.val();
                     if (ownerId === playerId) {
@@ -1256,11 +1263,9 @@
                     roomLockToggle.checked = !!snap.val();
                 });
 
-                // Dengar Kursor Pemain Lain & Notifikasi
                 roomRef.child('cursors').on('value', (snapshot) => {
                     const allCursors = snapshot.val() || {};
 
-                    // Cek jika ada pemain baru untuk di-notif
                     if (!isInitialCursorLoad) {
                         Object.keys(allCursors).forEach(id => {
                             if (!knownPlayers.includes(id) && id !== playerId) {
@@ -1270,11 +1275,9 @@
                         });
                     }
 
-                    // Update daftar pemain yang diketahui
                     knownPlayers = Object.keys(allCursors);
                     isInitialCursorLoad = false;
 
-                    // Bersihkan kursor yang sudah keluar
                     Object.keys(cursors).forEach(id => {
                         if (!allCursors[id] && cursors[id]) {
                             cursors[id].remove();
@@ -1282,7 +1285,6 @@
                         }
                     });
 
-                    // Update UI kursor
                     Object.keys(allCursors).forEach(id => {
                         if (id === playerId) return;
                         const data = allCursors[id];
@@ -1294,22 +1296,33 @@
                                 <i class="fa-solid fa-arrow-pointer cursor-icon" style="color: ${data.color}"></i>
                                 <div class="cursor-name" style="background: ${data.color}">${data.name}</div>
                             `;
-                            document.body.appendChild(cursorEl);
+                            // PERBAIKAN: Masukkan kursor hanya ke dalam #game-screen
+                            document.getElementById('game-screen').appendChild(cursorEl);
                             cursors[id] = cursorEl;
                         }
-                        cursors[id].style.transform = `translate(${data.x}px, ${data.y}px)`;
+
+                        // Konversi relatif ke absolut khusus layar HP/Laptop teman
+                        let absX = data.rx !== undefined && data.rx >= 0 ? data.rx * window.innerWidth : -100;
+                        let absY = data.ry !== undefined && data.ry >= 0 ? data.ry * window.innerHeight : -100;
+
+                        cursors[id].style.transform = `translate(${absX}px, ${absY}px)`;
                         cursors[id].querySelector('.cursor-name').textContent = data.name;
                     });
                 });
 
-                // Sinkronisasi Kepingan Awal
                 roomRef.child('pieces').once('value', (snapshot) => {
                     if (snapshot.exists()) {
                         const fbPieces = snapshot.val();
                         pieces.forEach(p => {
                             if (fbPieces[p.id]) {
-                                p.currentX = fbPieces[p.id].x;
-                                p.currentY = fbPieces[p.id].y;
+                                // TERIMA KOORDINAT RELATIF
+                                if (fbPieces[p.id].rx !== undefined) {
+                                    p.currentX = boardX + (fbPieces[p.id].rx * boardWidth);
+                                    p.currentY = boardY + (fbPieces[p.id].ry * boardHeight);
+                                } else {
+                                    p.currentX = fbPieces[p.id].x;
+                                    p.currentY = fbPieces[p.id].y;
+                                }
                                 p.groupId = fbPieces[p.id].groupId !== undefined ? fbPieces[p.id].groupId : p.groupId;
                             }
                         });
@@ -1319,13 +1332,16 @@
                         roomRef.child('isLocked').set(false);
                         let initialData = {};
                         pieces.forEach(p => {
-                            initialData[p.id] = { x: p.currentX, y: p.currentY, groupId: p.groupId };
+                            initialData[p.id] = {
+                                rx: (p.currentX - boardX) / boardWidth,
+                                ry: (p.currentY - boardY) / boardHeight,
+                                groupId: p.groupId
+                            };
                         });
                         roomRef.child('pieces').set(initialData);
                     }
                 });
 
-                // Dengarkan Pergerakan Puzzle
                 roomRef.child('pieces').on('child_changed', (snapshot) => {
                     const pieceData = snapshot.val();
                     const pId = parseInt(snapshot.key);
@@ -1334,8 +1350,14 @@
 
                     const p = pieces.find(piece => piece.id === pId);
                     if (p) {
-                        p.currentX = pieceData.x;
-                        p.currentY = pieceData.y;
+                        // TERIMA KOORDINAT RELATIF
+                        if (pieceData.rx !== undefined) {
+                            p.currentX = boardX + (pieceData.rx * boardWidth);
+                            p.currentY = boardY + (pieceData.ry * boardHeight);
+                        } else {
+                            p.currentX = pieceData.x;
+                            p.currentY = pieceData.y;
+                        }
                         if (pieceData.groupId !== undefined) p.groupId = pieceData.groupId;
                         needsRedraw = true;
                     }
@@ -1343,7 +1365,6 @@
             }
         }
 
-        // Perbarui & Simpan Nama di Firebase dan LocalStorage
         playerNameInput.addEventListener('input', (e) => {
             savedPlayerName = e.target.value || 'Pemain';
             localStorage.setItem('jigsawPlayerName', savedPlayerName);
@@ -1353,17 +1374,19 @@
             }
         });
 
-        // Event Toggle Lock Room
         roomLockToggle.addEventListener('change', (e) => {
             if (roomRef) {
                 roomRef.update({ isLocked: e.target.checked });
             }
         });
 
-        // Kirim Koordinat Mouse
+        // KIRIM KOORDINAT KURSOR SECARA RELATIF (Persentase layar)
         window.addEventListener('mousemove', (e) => {
             if (activeRoomPin && gameScreen.style.display === 'block' && roomRef) {
-                roomRef.child(`cursors/${playerId}`).update({ x: e.clientX, y: e.clientY });
+                roomRef.child(`cursors/${playerId}`).update({
+                    rx: e.clientX / window.innerWidth,
+                    ry: e.clientY / window.innerHeight
+                });
             }
         });
 
@@ -1401,7 +1424,7 @@
                 roomRef = null;
             }
             activeRoomPin = '';
-            roomInput.value = ''; // Kosongkan saat kembali ke menu
+            roomInput.value = '';
 
             updateSelectionUI();
         });
@@ -1568,7 +1591,7 @@
         }
 
         function onPointerDown(e) {
-            if (e.target.closest('.floating-ui') || e.target.closest('.dropdown-menu')) return;
+            if (e.target.closest('.floating-ui') || e.target.closest('.dropdown-menu') || e.target.closest('.notification-item')) return;
             if (e.cancelable) e.preventDefault();
 
             const pos = getPointerPos(e);
@@ -1616,8 +1639,12 @@
                     p.currentX = pos.x - offset.dx + shiftX;
                     p.currentY = pos.y - offset.dy + shiftY;
 
+                    // KIRIM KOORDINAT RELATIF PIECE
                     if (activeRoomPin && roomRef) {
-                        roomRef.child(`pieces/${p.id}`).update({ x: p.currentX, y: p.currentY });
+                        roomRef.child(`pieces/${p.id}`).update({
+                            rx: (p.currentX - boardX) / boardWidth,
+                            ry: (p.currentY - boardY) / boardHeight
+                        });
                     }
                 }
             });
@@ -1652,7 +1679,11 @@
 
             if (snapped && activeRoomPin && roomRef) {
                 activePieces.forEach(p => {
-                    roomRef.child(`pieces/${p.id}`).update({ x: p.currentX, y: p.currentY, groupId: p.groupId });
+                    roomRef.child(`pieces/${p.id}`).update({
+                        rx: (p.currentX - boardX) / boardWidth,
+                        ry: (p.currentY - boardY) / boardHeight,
+                        groupId: p.groupId
+                    });
                 });
             }
 
