@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigsaw Art Puzzle - Modern Edition (Auto-Save & Draggable UI)</title>
+    <title>Jigsaw Art Puzzle - Multiplayer Ready</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -126,9 +126,9 @@
             border-left: 1px solid #e5e5e5;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             padding: 50px;
             box-shadow: -10px 0 30px rgba(0, 0, 0, 0.06);
+            overflow-y: auto;
         }
 
         .selection-title {
@@ -138,12 +138,13 @@
             color: var(--primary);
             font-weight: 700;
             margin-bottom: 10px;
+            margin-top: auto;
         }
 
         .image-title {
             font-size: 2.2rem;
             color: var(--text-main);
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             font-weight: 800;
             line-height: 1.2;
         }
@@ -151,7 +152,7 @@
         .settings-panel {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .input-group {
@@ -166,7 +167,7 @@
             color: var(--text-muted);
         }
 
-        select {
+        .form-control {
             padding: 16px 20px;
             background: #ffffff;
             color: var(--text-main);
@@ -174,9 +175,17 @@
             border-radius: 12px;
             font-size: 1.05rem;
             font-weight: 500;
-            cursor: pointer;
             outline: none;
             transition: all 0.2s;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: #000;
+        }
+
+        select.form-control {
+            cursor: pointer;
             appearance: none;
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23111111%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
@@ -207,26 +216,75 @@
             border-color: #000000;
         }
 
-        #start-btn {
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            flex: 2;
             background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
             color: #ffffff;
             border: none;
-            padding: 20px;
-            font-size: 1.2rem;
+            padding: 18px;
+            font-size: 1.1rem;
             font-weight: 700;
             border-radius: 14px;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 20px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        #start-btn:hover {
+        .btn-primary:hover {
             transform: translateY(-3px);
             background: #000000;
             box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-donate {
+            flex: 1;
+            background: #f59e0b;
+            color: #ffffff;
+            border: none;
+            padding: 18px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-donate:hover {
+            transform: translateY(-3px);
+            background: #d97706;
+            box-shadow: 0 15px 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .footer-credit {
+            margin-top: auto;
+            padding-top: 40px;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .footer-credit a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.2s;
+        }
+
+        .footer-credit a:hover {
+            color: #1e40af;
+            text-decoration: underline;
         }
 
         /* --- LAYAR PERMAINAN --- */
@@ -251,25 +309,6 @@
             --modal-bg: rgba(15, 23, 42, 0.92);
         }
 
-        .theme-toggle-btn {
-            background: transparent;
-            color: var(--text-main);
-            border: 2px solid #cbd5e1;
-            width: 46px;
-            height: 46px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 1.2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.2s;
-        }
-
-        #game-screen.dark-theme .theme-toggle-btn {
-            border-color: rgba(255, 255, 255, 0.25);
-        }
-
         .floating-ui {
             position: absolute;
             top: 24px;
@@ -284,22 +323,134 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        .floating-ui:active {
+            cursor: grabbing;
         }
 
         .top-left-ui {
             left: 24px;
             flex-direction: column;
             align-items: flex-start;
-            cursor: grab;
-            touch-action: none;
         }
 
-        .top-left-ui:active {
-            cursor: grabbing;
+        /* Wrapper untuk UI Kanan agar Dropdown posisinya relatif ke menu ini */
+        .top-right-wrapper {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            z-index: 20;
         }
 
         .top-right-ui {
-            right: 24px;
+            position: relative;
+            top: 0;
+            right: 0;
+            padding: 8px;
+            border-radius: 14px;
+        }
+
+        .hamburger-btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 2px solid #cbd5e1;
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.4rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        #game-screen.dark-theme .hamburger-btn {
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* DROPDOWN MENU */
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: var(--modal-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 15px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 220px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 30;
+        }
+
+        .dropdown-menu.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .room-badge {
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 5px;
+            border: 1px dashed #2563eb;
+            user-select: text;
+            font-size: 0.95rem;
+        }
+
+        #game-screen.dark-theme .room-badge {
+            background: rgba(96, 165, 250, 0.1);
+            color: #60a5fa;
+            border-color: #60a5fa;
+        }
+
+        .dropdown-item {
+            background: transparent;
+            border: none;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        #game-screen.dark-theme .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .text-danger {
+            color: #ef4444;
+        }
+
+        .text-donate {
+            color: #f59e0b;
         }
 
         .timer {
@@ -325,32 +476,14 @@
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
         }
 
-        .back-btn {
-            background: transparent;
-            color: var(--text-main);
-            border: 2px solid #cbd5e1;
-            padding: 10px 24px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        .back-btn:hover {
-            background: var(--text-main);
-            color: #fff;
-            border-color: var(--text-main);
-        }
-
         #puzzle-canvas {
             display: block;
             width: 100vw;
             height: 100vh;
         }
 
-        /* --- MODAL --- */
-        #full-image-modal {
+        /* --- MODAL GLOBAL (Win & Full Image & Donasi) --- */
+        .modal-overlay {
             display: none;
             position: absolute;
             top: 0;
@@ -364,8 +497,11 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            cursor: zoom-out;
             animation: fadeIn 0.3s ease;
+        }
+
+        #full-image-modal {
+            cursor: zoom-out;
         }
 
         @keyframes fadeIn {
@@ -460,6 +596,57 @@
             transform: scale(1.05);
         }
 
+        /* CSS MODAL DONASI */
+        .modal-content-box {
+            background: var(--modal-bg);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            max-width: 400px;
+            width: 90%;
+            cursor: default;
+        }
+
+        #game-screen.dark-theme .modal-content-box {
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .modal-content-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .modal-content-box p {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .qris-img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-main);
+        }
+
         @media (max-width: 900px) {
             #selection-screen {
                 flex-direction: column;
@@ -503,7 +690,7 @@
             <div class="settings-panel">
                 <div class="input-group">
                     <label for="piece-count">Jumlah Pieces</label>
-                    <select id="piece-count">
+                    <select id="piece-count" class="form-control">
                         <option value="100">100 Pieces</option>
                         <option value="200">200 Pieces</option>
                         <option value="300">300 Pieces</option>
@@ -518,22 +705,57 @@
                     </label>
                 </div>
 
-                <button id="start-btn">Mulai Bermain</button>
+                <!-- Input Room -->
+                <div class="input-group">
+                    <label for="room-input">Kode Room (Opsional)</label>
+                    <input type="text" id="room-input" class="form-control" placeholder="Masukkan PIN Room..."
+                        autocomplete="off">
+                </div>
+
+                <!-- Tombol Mulai & Donasi -->
+                <div class="btn-group">
+                    <button id="start-btn" class="btn-primary">Mulai Bermain</button>
+                    <!-- Mengubah fungsi menjadi pemanggil modal -->
+                    <button class="btn-donate" id="btn-donate-menu">Donasi</button>
+                </div>
+            </div>
+
+            <!-- Footer Hak Cipta -->
+            <div class="footer-credit">
+                dibuat oleh <a href="https://izumiazmi.github.io/portfolio" target="_blank">Muhammad Habib Al Azmi</a>
             </div>
         </div>
     </div>
 
     <!-- LAYAR PERMAINAN -->
     <div id="game-screen">
+        <!-- UI Kiri: Timer & Thumbnail -->
         <div class="floating-ui top-left-ui">
             <div class="timer" id="timer">00:00</div>
             <img id="thumb-img" class="thumb-preview" src="" title="Klik untuk lihat referensi" alt="Thumbnail">
         </div>
 
-        <div class="floating-ui top-right-ui">
-            <button class="theme-toggle-btn" id="theme-toggle-btn" title="Ganti Tema"><i
-                    class="fa-solid fa-moon"></i></button>
-            <button class="back-btn" id="back-btn">Kembali</button>
+        <!-- UI Kanan: Dropdown Menu Hamburger -->
+        <div class="top-right-wrapper">
+            <div class="floating-ui top-right-ui" id="drag-menu-handle">
+                <button class="hamburger-btn" id="menu-toggle-btn" title="Menu"><i
+                        class="fa-solid fa-bars"></i></button>
+            </div>
+
+            <!-- Dropdown Menu Item -->
+            <div class="dropdown-menu" id="dropdown-menu">
+                <div class="room-badge">Room PIN: <span id="display-room-code">Offline</span></div>
+
+                <button class="dropdown-item" id="dropdown-theme-btn">
+                    <i class="fa-solid fa-moon"></i> Ganti Tema
+                </button>
+                <button class="dropdown-item text-donate" id="btn-donate-game">
+                    <i class="fa-solid fa-heart"></i> Donasi
+                </button>
+                <button class="dropdown-item text-danger" id="dropdown-back-btn">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Kembali
+                </button>
+            </div>
         </div>
 
         <canvas id="puzzle-canvas"></canvas>
@@ -545,9 +767,20 @@
         </div>
     </div>
 
-    <div id="full-image-modal">
+    <!-- MODAL FULL IMAGE -->
+    <div id="full-image-modal" class="modal-overlay">
         <img id="full-preview-img" src="" alt="Full Reference">
         <div class="close-modal-hint">Klik di mana saja untuk kembali bermain</div>
+    </div>
+
+    <!-- MODAL DONASI -->
+    <div id="donation-modal" class="modal-overlay">
+        <div class="modal-content-box" id="donation-content">
+            <button class="close-btn" id="close-donation-btn"><i class="fa-solid fa-xmark"></i></button>
+            <h3>Dukung Kami</h3>
+            <p>Scan QRIS di bawah ini untuk berdonasi:</p>
+            <img src="images/qris.jpg" alt="QRIS Donasi" class="qris-img">
+        </div>
     </div>
 
     <script>
@@ -561,6 +794,7 @@
         let currentImageIndex = 0;
         let customImageIndex = -1;
         let pieceCount = 100;
+        let activeRoomPin = '';
         let imgObj = new Image();
 
         const selectionScreen = document.getElementById('selection-screen');
@@ -568,6 +802,7 @@
         const imageTitle = document.getElementById('image-title');
         const pieceSelect = document.getElementById('piece-count');
         const uploadInput = document.getElementById('upload-input');
+        const roomInput = document.getElementById('room-input');
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
         const startBtn = document.getElementById('start-btn');
@@ -576,12 +811,26 @@
         const ctx = canvas.getContext('2d');
         const timerEl = document.getElementById('timer');
         const thumbImg = document.getElementById('thumb-img');
-        const backBtn = document.getElementById('back-btn');
-        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+
+        // Element Dropdown UI
+        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const displayRoomCode = document.getElementById('display-room-code');
+        const dropdownThemeBtn = document.getElementById('dropdown-theme-btn');
+        const dropdownBackBtn = document.getElementById('dropdown-back-btn');
+
+        // Modal Element
         const winModal = document.getElementById('win-modal');
         const playAgainBtn = document.getElementById('play-again-btn');
         const fullImageModal = document.getElementById('full-image-modal');
         const fullPreviewImg = document.getElementById('full-preview-img');
+
+        // Donation Element
+        const donationModal = document.getElementById('donation-modal');
+        const btnDonateMenu = document.getElementById('btn-donate-menu');
+        const btnDonateGame = document.getElementById('btn-donate-game');
+        const closeDonationBtn = document.getElementById('close-donation-btn');
+        const donationContent = document.getElementById('donation-content');
 
         let boardWidth, boardHeight, boardX, boardY;
         let pieces = [];
@@ -589,8 +838,8 @@
         let dragOffsets = [];
         let timerInterval = null;
         let secondsElapsed = 0;
-        let needsRedraw = false; // FLAG untuk optimasi render
-        let uiHasMoved = false; // Membedakan 'klik' thumbnail dan 'geser' ui
+        let needsRedraw = false;
+        let uiHasMoved = false;
 
         // --- MANAJEMEN AUTO-SAVE ---
         function saveGameState() {
@@ -599,6 +848,7 @@
                 currentImageIndex,
                 isCustom: customImageIndex !== -1 && customImageIndex === currentImageIndex,
                 pieceCount,
+                activeRoomPin,
                 secondsElapsed,
                 boardWidth, boardHeight, boardX, boardY,
                 piecesData: pieces.map(p => ({
@@ -608,7 +858,7 @@
                     c: p.c,
                     currentX: p.currentX,
                     currentY: p.currentY,
-                    edges: p.edges // edges sekarang ikut disimpan
+                    edges: p.edges
                 }))
             };
             try {
@@ -617,7 +867,7 @@
                     localStorage.setItem('jigsawCustomImg', puzzleImages[customImageIndex].url);
                 }
             } catch (e) {
-                console.warn("Gagal menyimpan progress (Quota melebihi batas)");
+                console.warn("Gagal menyimpan progress");
             }
         }
 
@@ -645,23 +895,24 @@
                 }
 
                 pieceCount = state.pieceCount;
+                activeRoomPin = state.activeRoomPin || 'Offline';
                 secondsElapsed = state.secondsElapsed;
                 boardWidth = state.boardWidth;
                 boardHeight = state.boardHeight;
                 boardX = state.boardX;
                 boardY = state.boardY;
 
-                // Setup UI ke mode in-game
+                displayRoomCode.textContent = activeRoomPin;
+
                 selectionScreen.style.display = 'none';
                 gameScreen.style.display = 'block';
                 const currentData = puzzleImages[currentImageIndex];
 
-                // Pastikan thumbnail dipasang
                 thumbImg.src = currentData.url;
                 fullPreviewImg.src = currentData.url;
 
                 resizeCanvas();
-                startTimer(secondsElapsed); // Lanjutkan timer
+                startTimer(secondsElapsed);
 
                 imgObj = new Image();
                 imgObj.src = currentData.url;
@@ -674,7 +925,6 @@
                     const pieceW = boardWidth / cols;
                     const pieceH = boardHeight / rows;
 
-                    // Bangun ulang Path2D dan kepingan dari data memori
                     pieces = state.piecesData.map(pData => {
                         const path = createPiecePath(pieceW, pieceH, pData.edges);
                         return {
@@ -694,7 +944,7 @@
             }
         }
 
-        // --- LOGIKA MENU ---
+        // --- LOGIKA MENU SELEKSI ---
         function updateSelectionUI() {
             previewImg.style.opacity = 0;
             setTimeout(() => {
@@ -731,35 +981,78 @@
 
         startBtn.addEventListener('click', () => {
             pieceCount = parseInt(pieceSelect.value);
+            activeRoomPin = roomInput.value.trim() !== '' ? roomInput.value.trim() : 'Offline';
+
+            displayRoomCode.textContent = activeRoomPin;
+
             selectionScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             const currentData = puzzleImages[currentImageIndex];
 
-            // Set source saat permainan baru dimulai
             thumbImg.src = currentData.url;
             fullPreviewImg.src = currentData.url;
 
             initGame();
         });
 
-        backBtn.addEventListener('click', () => {
+        // --- LOGIKA MODAL DONASI ---
+        function openDonationModal() {
+            donationModal.style.display = 'flex';
+        }
+
+        function closeDonationModal() {
+            donationModal.style.display = 'none';
+        }
+
+        btnDonateMenu.addEventListener('click', openDonationModal);
+        btnDonateGame.addEventListener('click', () => {
+            dropdownMenu.classList.remove('active'); // Tutup menu saat modal terbuka
+            openDonationModal();
+        });
+
+        closeDonationBtn.addEventListener('click', closeDonationModal);
+
+        // Menutup modal donasi saat klik background, tapi bukan saat klik isinya
+        donationModal.addEventListener('click', (e) => {
+            if (!donationContent.contains(e.target)) {
+                closeDonationModal();
+            }
+        });
+
+        // --- LOGIKA DROPDOWN MENU DALAM PERMAINAN ---
+        menuToggleBtn.addEventListener('click', (e) => {
+            if (uiHasMoved) return; // Mencegah klik terbuka saat panel di-drag
+            dropdownMenu.classList.toggle('active');
+        });
+
+        // Tutup dropdown jika klik di luar
+        document.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.top-right-wrapper')) {
+                dropdownMenu.classList.remove('active');
+            }
+        });
+
+        dropdownBackBtn.addEventListener('click', () => {
             clearInterval(timerInterval);
             gameScreen.style.display = 'none';
             selectionScreen.style.display = 'flex';
             winModal.style.display = 'none';
-            // Bersihkan memori progress saat memilih kembali ke menu utama
+            dropdownMenu.classList.remove('active');
+
             localStorage.removeItem('jigsawSaveState');
+            updateSelectionUI();
         });
 
-        themeToggleBtn.addEventListener('click', () => {
+        dropdownThemeBtn.addEventListener('click', () => {
             const isDark = gameScreen.classList.toggle('dark-theme');
-            themeToggleBtn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+            dropdownThemeBtn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i> Tema Terang' : '<i class="fa-solid fa-moon"></i> Tema Gelap';
+            localStorage.setItem('jigsawDarkTheme', isDark);
             needsRedraw = true;
         });
 
-        // Event listener thumbnail yang benar
+        // Thumbnail Listener
         thumbImg.addEventListener('click', () => {
-            if (uiHasMoved) return; // Mencegah terbuka jika tidak sengaja terklik saat drag
+            if (uiHasMoved) return;
             fullImageModal.style.display = 'flex';
         });
 
@@ -881,14 +1174,12 @@
 
                     pieces.push({
                         id: pId, groupId: pId, r, c, pieceW, pieceH,
-                        currentX: randomX, currentY: randomY, edges, path // Menyimpan edges
+                        currentX: randomX, currentY: randomY, edges, path
                     });
                 }
             }
             pieces.sort(() => Math.random() - 0.5);
             needsRedraw = true;
-
-            // Simpan saat puzzle selesai dibuat/diacak
             saveGameState();
         }
 
@@ -929,7 +1220,6 @@
             }
         }
 
-        // GAME LOOP
         function gameLoop() {
             if (needsRedraw && gameScreen.style.display === 'block') {
                 render();
@@ -946,7 +1236,8 @@
         }
 
         function onPointerDown(e) {
-            if (e.target.closest('.floating-ui')) return;
+            // Abaikan klik jika mengenai elemen floating UI atau menu Dropdown
+            if (e.target.closest('.floating-ui') || e.target.closest('.dropdown-menu')) return;
             if (e.cancelable) e.preventDefault();
 
             const pos = getPointerPos(e);
@@ -977,11 +1268,33 @@
             if (activePieces.length === 0) return;
             const pos = getPointerPos(e);
 
+            let minNewX = Infinity, minNewY = Infinity;
+            let maxNewX = -Infinity, maxNewY = -Infinity;
+
             activePieces.forEach(p => {
                 const offset = dragOffsets.find(o => o.id === p.id);
                 if (offset) {
-                    p.currentX = pos.x - offset.dx;
-                    p.currentY = pos.y - offset.dy;
+                    let nx = pos.x - offset.dx;
+                    let ny = pos.y - offset.dy;
+                    if (nx < minNewX) minNewX = nx;
+                    if (ny < minNewY) minNewY = ny;
+                    if (nx + p.pieceW > maxNewX) maxNewX = nx + p.pieceW;
+                    if (ny + p.pieceH > maxNewY) maxNewY = ny + p.pieceH;
+                }
+            });
+
+            let shiftX = 0, shiftY = 0;
+            if (maxNewX > canvas.width) shiftX = canvas.width - maxNewX;
+            if (minNewX + shiftX < 0) shiftX = -minNewX;
+
+            if (maxNewY > canvas.height) shiftY = canvas.height - maxNewY;
+            if (minNewY + shiftY < 0) shiftY = -minNewY;
+
+            activePieces.forEach(p => {
+                const offset = dragOffsets.find(o => o.id === p.id);
+                if (offset) {
+                    p.currentX = pos.x - offset.dx + shiftX;
+                    p.currentY = pos.y - offset.dy + shiftY;
                 }
             });
             needsRedraw = true;
@@ -1023,9 +1336,7 @@
             dragOffsets = [];
             needsRedraw = true;
 
-            // Simpan posisi setiap kali mouse/sentuhan diangkat
             saveGameState();
-
             checkWinCondition();
         }
 
@@ -1045,54 +1356,67 @@
                     document.getElementById('win-time').textContent = `Waktu Anda: ${timerEl.textContent}`;
                     winModal.style.display = 'block';
 
-                    // Bersihkan memori progress karena permainan sudah selesai
                     localStorage.removeItem('jigsawSaveState');
                 }
             }
         }
 
         // --- LOGIKA DRAG PANEL UI ---
-        const topLeftUI = document.querySelector('.top-left-ui');
-        let isUIDragging = false;
-        let uiDragOffsetX = 0;
-        let uiDragOffsetY = 0;
+        const floatingUIs = document.querySelectorAll('.top-left-ui, .top-right-wrapper');
+            let activeUIDrag = null;
+            let uiDragOffsetX = 0;
+            let uiDragOffsetY = 0;
 
-        function onUIDragStart(e) {
-            isUIDragging = true;
-            uiHasMoved = false;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            const rect = topLeftUI.getBoundingClientRect();
-            uiDragOffsetX = clientX - rect.left;
-            uiDragOffsetY = clientY - rect.top;
-        }
+            function onUIDragStart(e) {
+                // PERBAIKAN: Paksa target drag ke elemen induk (wrapper) agar tidak tercecer
+                const uiEl = e.target.closest('.top-right-wrapper') || e.target.closest('.top-left-ui');
 
-        function onUIDragMove(e) {
-            if (!isUIDragging) return;
-            uiHasMoved = true;
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                // Abaikan jika klik berasal dari dalam dropdown
+                if (!uiEl || e.target.closest('.dropdown-menu')) return;
 
-            let newX = clientX - uiDragOffsetX;
-            let newY = clientY - uiDragOffsetY;
-            newX = Math.max(0, Math.min(window.innerWidth - topLeftUI.offsetWidth, newX));
-            newY = Math.max(0, Math.min(window.innerHeight - topLeftUI.offsetHeight, newY));
+                activeUIDrag = uiEl;
+                isUIDragging = true;
+                uiHasMoved = false;
 
-            topLeftUI.style.left = `${newX}px`;
-            topLeftUI.style.top = `${newY}px`;
-            topLeftUI.style.right = 'auto';
-        }
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                const rect = activeUIDrag.getBoundingClientRect();
 
-        function onUIDragEnd() {
-            isUIDragging = false;
-        }
+                uiDragOffsetX = clientX - rect.left;
+                uiDragOffsetY = clientY - rect.top;
+            }
 
-        topLeftUI.addEventListener('mousedown', onUIDragStart);
-        window.addEventListener('mousemove', onUIDragMove);
-        window.addEventListener('mouseup', onUIDragEnd);
-        topLeftUI.addEventListener('touchstart', onUIDragStart, { passive: false });
-        window.addEventListener('touchmove', onUIDragMove, { passive: false });
-        window.addEventListener('touchend', onUIDragEnd);
+            function onUIDragMove(e) {
+                if (!activeUIDrag) return;
+                uiHasMoved = true;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                let newX = clientX - uiDragOffsetX;
+                let newY = clientY - uiDragOffsetY;
+
+                newX = Math.max(0, Math.min(window.innerWidth - activeUIDrag.offsetWidth, newX));
+                newY = Math.max(0, Math.min(window.innerHeight - activeUIDrag.offsetHeight, newY));
+
+                activeUIDrag.style.left = `${newX}px`;
+                activeUIDrag.style.top = `${newY}px`;
+                activeUIDrag.style.right = 'auto';
+            }
+
+            function onUIDragEnd() {
+                activeUIDrag = null;
+                isUIDragging = false;
+            }
+
+            floatingUIs.forEach(ui => {
+                ui.addEventListener('mousedown', onUIDragStart);
+                ui.addEventListener('touchstart', onUIDragStart, { passive: false });
+            });
+
+            window.addEventListener('mousemove', onUIDragMove);
+            window.addEventListener('mouseup', onUIDragEnd);
+            window.addEventListener('touchmove', onUIDragMove, { passive: false });
+            window.addEventListener('touchend', onUIDragEnd);
 
         // --- EVENT LISTENERS TAMBAHAN ---
         playAgainBtn.addEventListener('click', initGame);
@@ -1103,20 +1427,22 @@
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
 
-        // Simpan timer secara periodik saat tab akan disembunyikan/ditutup
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden' && gameScreen.style.display === 'block') {
                 saveGameState();
             }
         });
 
-        // --- INISIALISASI AWAL ---
-        // Coba muat memori lokal. Jika tidak ada memori (false), maka muat layar seleksi seperti biasa.
+        const savedTheme = localStorage.getItem('jigsawDarkTheme');
+        if (savedTheme === 'true') {
+            gameScreen.classList.add('dark-theme');
+            dropdownThemeBtn.innerHTML = '<i class="fa-solid fa-sun"></i> Tema Terang';
+        }
+
         if (!loadGameState()) {
             updateSelectionUI();
         }
 
-        // Memulai Render Loop
         requestAnimationFrame(gameLoop);
     </script>
 </body>
