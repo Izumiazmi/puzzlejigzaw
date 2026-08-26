@@ -4,11 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigsaw Art Puzzle - Multiplayer Ready</title>
+    <title>Jigsaw Art Puzzle - Firebase Multiplayer</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <!-- SDK Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
         :root {
@@ -23,6 +26,7 @@
             --glass-border: rgba(255, 255, 255, 0.5);
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --text-danger: #ef4444;
         }
 
         * {
@@ -39,6 +43,94 @@
             overflow: hidden;
             width: 100vw;
             height: 100vh;
+        }
+
+        /* --- KURSOR MULTIPLAYER --- */
+        .multiplayer-cursor {
+            position: absolute;
+            pointer-events: none;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: transform 0.05s linear;
+        }
+
+        .cursor-icon {
+            font-size: 1.2rem;
+            transform: rotate(-15deg) translateY(-5px);
+            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
+        }
+
+        .cursor-name {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 12px;
+            margin-top: 2px;
+            margin-left: 12px;
+            white-space: nowrap;
+        }
+
+        /* --- NOTIFIKASI SYSTEM --- */
+        #notification-container {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            /* Agar tidak ganggu puzzle di baliknya jika meleset */
+        }
+
+        .notification-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+            /* Agar tombol close bisa diklik */
+        }
+
+        .notification-item .close-notif {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .notification-item .close-notif:hover {
+            color: var(--text-danger);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         /* --- LAYAR PEMILIHAN --- */
@@ -338,7 +430,6 @@
             align-items: flex-start;
         }
 
-        /* Wrapper untuk UI Kanan agar Dropdown posisinya relatif ke menu ini */
         .top-right-wrapper {
             position: absolute;
             top: 24px;
@@ -386,7 +477,7 @@
             display: none;
             flex-direction: column;
             gap: 8px;
-            min-width: 220px;
+            min-width: 250px;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             z-index: 30;
@@ -440,10 +531,66 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        .dropdown-item.no-hover:hover {
+            background: transparent;
+            cursor: default;
+        }
+
         .dropdown-item i {
             width: 20px;
             text-align: center;
             font-size: 1.1rem;
+        }
+
+        /* Toggle Switch CSS */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            margin-left: auto;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #2563eb;
+        }
+
+        input:focus+.slider {
+            box-shadow: 0 0 1px #2563eb;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
         }
 
         .text-danger {
@@ -483,7 +630,7 @@
             height: 100vh;
         }
 
-        /* --- MODAL GLOBAL (Win & Full Image & Donasi) --- */
+        /* --- MODAL GLOBAL --- */
         .modal-overlay {
             display: none;
             position: absolute;
@@ -670,36 +817,6 @@
                 margin-bottom: 20px;
             }
         }
-
-        /* CSS Kursor Teman */
-        .multiplayer-cursor {
-            position: absolute;
-            pointer-events: none;
-            /* Agar tidak mengganggu klik puzzle */
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            transition: transform 0.05s linear;
-            /* Agar pergerakan smooth */
-        }
-
-        .cursor-icon {
-            font-size: 1.2rem;
-            transform: rotate(-15deg) translateY(-5px);
-            filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.5));
-        }
-
-        .cursor-name {
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 12px;
-            margin-top: 2px;
-            margin-left: 12px;
-            white-space: nowrap;
-        }
     </style>
 </head>
 
@@ -736,17 +853,16 @@
                     </label>
                 </div>
 
-                <!-- Input Room -->
+                <!-- Input Room Dikosongkan Default-nya -->
                 <div class="input-group">
-                    <label for="room-input">Kode Room (Opsional)</label>
-                    <input type="text" id="room-input" class="form-control" placeholder="Masukkan PIN Room..."
-                        autocomplete="off">
+                    <label for="room-input">Kode Room</label>
+                    <input type="text" id="room-input" class="form-control" placeholder="Masukan pin untuk bergabung"
+                        autocomplete="off" style="font-weight: 700; color: #2563eb; letter-spacing: 1px;">
                 </div>
 
                 <!-- Tombol Mulai & Donasi -->
                 <div class="btn-group">
                     <button id="start-btn" class="btn-primary">Mulai Bermain</button>
-                    <!-- Mengubah fungsi menjadi pemanggil modal -->
                     <button class="btn-donate" id="btn-donate-menu">Donasi</button>
                 </div>
             </div>
@@ -760,6 +876,10 @@
 
     <!-- LAYAR PERMAINAN -->
     <div id="game-screen">
+
+        <!-- Wadah Notifikasi Pemain Masuk -->
+        <div id="notification-container"></div>
+
         <!-- UI Kiri: Timer & Thumbnail -->
         <div class="floating-ui top-left-ui">
             <div class="timer" id="timer">00:00</div>
@@ -776,11 +896,22 @@
             <!-- Dropdown Menu Item -->
             <div class="dropdown-menu" id="dropdown-menu">
                 <div class="room-badge">Room PIN: <span id="display-room-code">Offline</span></div>
-                <div class="dropdown-item" style="cursor: default;">
+
+                <div class="dropdown-item no-hover" style="padding-bottom: 5px;">
                     <i class="fa-solid fa-user"></i>
                     <input type="text" id="player-name-input" class="form-control" placeholder="Nama Anda"
-                        style="padding: 8px; font-size: 0.9rem; margin-left: 5px; background: transparent; border: 1px solid var(--glass-border); color: var(--text-main);">
+                        style="padding: 8px; font-size: 0.9rem; margin-left: 5px; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: var(--text-main);">
                 </div>
+
+                <div class="dropdown-item no-hover" id="room-lock-container" title="Cegah orang lain bergabung"
+                    style="display: none;">
+                    <i class="fa-solid fa-lock"></i> Kunci Room
+                    <label class="switch">
+                        <input type="checkbox" id="room-lock-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
                 <button class="dropdown-item" id="dropdown-theme-btn">
                     <i class="fa-solid fa-moon"></i> Ganti Tema
                 </button>
@@ -814,11 +945,56 @@
             <button class="close-btn" id="close-donation-btn"><i class="fa-solid fa-xmark"></i></button>
             <h3>Dukung Kami</h3>
             <p>Scan QRIS di bawah ini untuk berdonasi:</p>
+            <p>Belum dibuat, kirim aja ke Dana/Gopay : 081374195580</p>
             <img src="images/qris.jpg" alt="QRIS Donasi" class="qris-img">
         </div>
     </div>
 
     <script>
+        // --- INISIALISASI FIREBASE REALTIME DATABASE ---
+        const firebaseConfig = {
+            databaseURL: "https://jigsaw-backend-eb853-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Data Unik Pemain
+        let playerId = localStorage.getItem('jigsawUserId');
+        if (!playerId) {
+            playerId = 'uid_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('jigsawUserId', playerId);
+        }
+
+        const playerColors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+        const playerColor = playerColors[Math.floor(Math.random() * playerColors.length)];
+        let roomRef = null;
+        let cursors = {};
+        let knownPlayers = []; // Untuk melacak siapa saja yang sudah masuk demi notifikasi
+
+        let savedPlayerName = localStorage.getItem('jigsawPlayerName') || '';
+
+        // Fungsi Generate Kode Room Unik
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 7).toUpperCase();
+        }
+
+        // Fungsi Tampilkan Notifikasi
+        function showNotification(msg) {
+            const container = document.getElementById('notification-container');
+            const notif = document.createElement('div');
+            notif.className = 'notification-item';
+            notif.innerHTML = `<span>${msg}</span><button class="close-notif"><i class="fa-solid fa-xmark"></i></button>`;
+
+            container.appendChild(notif);
+
+            notif.querySelector('.close-notif').onclick = () => notif.remove();
+
+            // Hilang otomatis setelah 4 detik
+            setTimeout(() => {
+                if (notif.parentNode) notif.remove();
+            }, 4000);
+        }
+
         let puzzleImages = [
             { title: "The Starry Night\nVincent van Gogh", url: "images/starynight.jpg" },
             { title: "Mona Lisa\nLeonardo da Vinci", url: "images/monalisa.jpg" },
@@ -847,20 +1023,20 @@
         const timerEl = document.getElementById('timer');
         const thumbImg = document.getElementById('thumb-img');
 
-        // Element Dropdown UI
         const menuToggleBtn = document.getElementById('menu-toggle-btn');
         const dropdownMenu = document.getElementById('dropdown-menu');
         const displayRoomCode = document.getElementById('display-room-code');
         const dropdownThemeBtn = document.getElementById('dropdown-theme-btn');
         const dropdownBackBtn = document.getElementById('dropdown-back-btn');
+        const playerNameInput = document.getElementById('player-name-input');
+        const roomLockToggle = document.getElementById('room-lock-toggle');
+        const roomLockContainer = document.getElementById('room-lock-container');
 
-        // Modal Element
         const winModal = document.getElementById('win-modal');
         const playAgainBtn = document.getElementById('play-again-btn');
         const fullImageModal = document.getElementById('full-image-modal');
         const fullPreviewImg = document.getElementById('full-preview-img');
 
-        // Donation Element
         const donationModal = document.getElementById('donation-modal');
         const btnDonateMenu = document.getElementById('btn-donate-menu');
         const btnDonateGame = document.getElementById('btn-donate-game');
@@ -887,23 +1063,14 @@
                 secondsElapsed,
                 boardWidth, boardHeight, boardX, boardY,
                 piecesData: pieces.map(p => ({
-                    id: p.id,
-                    groupId: p.groupId,
-                    r: p.r,
-                    c: p.c,
-                    currentX: p.currentX,
-                    currentY: p.currentY,
-                    edges: p.edges
+                    id: p.id, groupId: p.groupId, r: p.r, c: p.c,
+                    currentX: p.currentX, currentY: p.currentY, edges: p.edges
                 }))
             };
             try {
                 localStorage.setItem('jigsawSaveState', JSON.stringify(state));
-                if (state.isCustom) {
-                    localStorage.setItem('jigsawCustomImg', puzzleImages[customImageIndex].url);
-                }
-            } catch (e) {
-                console.warn("Gagal menyimpan progress");
-            }
+                if (state.isCustom) localStorage.setItem('jigsawCustomImg', puzzleImages[customImageIndex].url);
+            } catch (e) { }
         }
 
         function loadGameState() {
@@ -918,26 +1085,22 @@
                         if (customImageIndex === -1) {
                             puzzleImages.push({ title: "Custom Image\nUnggahan Anda", url: customImg });
                             customImageIndex = puzzleImages.length - 1;
-                        } else {
-                            puzzleImages[customImageIndex].url = customImg;
-                        }
+                        } else { puzzleImages[customImageIndex].url = customImg; }
                         currentImageIndex = customImageIndex;
-                    } else {
-                        return false;
-                    }
+                    } else { return false; }
                 } else {
                     currentImageIndex = state.currentImageIndex;
                 }
 
                 pieceCount = state.pieceCount;
-                activeRoomPin = state.activeRoomPin || 'Offline';
+                activeRoomPin = state.activeRoomPin;
                 secondsElapsed = state.secondsElapsed;
                 boardWidth = state.boardWidth;
                 boardHeight = state.boardHeight;
                 boardX = state.boardX;
                 boardY = state.boardY;
 
-                displayRoomCode.textContent = activeRoomPin;
+                displayRoomCode.textContent = activeRoomPin || 'Offline';
 
                 selectionScreen.style.display = 'none';
                 gameScreen.style.display = 'block';
@@ -971,12 +1134,10 @@
                     activePieces = [];
                     dragOffsets = [];
                     needsRedraw = true;
+                    if (activeRoomPin) joinMultiplayerRoom(); // Lanjut Firebase setelah dimuat
                 };
                 return true;
-            } catch (e) {
-                console.error("Gagal memuat save data", e);
-                return false;
-            }
+            } catch (e) { return false; }
         }
 
         // --- LOGIKA MENU SELEKSI ---
@@ -1003,9 +1164,7 @@
                     if (customImageIndex === -1) {
                         puzzleImages.push({ title: "Custom Image\nUnggahan Anda", url: event.target.result });
                         customImageIndex = puzzleImages.length - 1;
-                    } else {
-                        puzzleImages[customImageIndex].url = event.target.result;
-                    }
+                    } else { puzzleImages[customImageIndex].url = event.target.result; }
                     currentImageIndex = customImageIndex;
                     updateSelectionUI();
                 };
@@ -1016,10 +1175,33 @@
 
         startBtn.addEventListener('click', () => {
             pieceCount = parseInt(pieceSelect.value);
-            activeRoomPin = roomInput.value.trim() !== '' ? roomInput.value.trim() : 'Offline';
+            const inputPin = roomInput.value.trim().toUpperCase();
 
+            if (inputPin !== '') {
+                // VALIDASI: Cek Firebase jika pemain memasukkan kode
+                db.ref(`rooms/${inputPin}`).once('value', (snap) => {
+                    if (!snap.exists()) {
+                        alert("Room tidak ditemukan. Periksa kembali Kode Room.");
+                        return;
+                    }
+                    if (snap.val().isLocked) {
+                        alert("Room ini telah dikunci oleh pemiliknya (Private Room).");
+                        return;
+                    }
+
+                    // Jika valid, lanjutkan masuk
+                    activeRoomPin = inputPin;
+                    proceedToGame();
+                });
+            } else {
+                // KOSONG: Generate room baru
+                activeRoomPin = generateRoomCode();
+                proceedToGame();
+            }
+        });
+
+        function proceedToGame() {
             displayRoomCode.textContent = activeRoomPin;
-
             selectionScreen.style.display = 'none';
             gameScreen.style.display = 'block';
             const currentData = puzzleImages[currentImageIndex];
@@ -1028,39 +1210,177 @@
             fullPreviewImg.src = currentData.url;
 
             initGame();
-        });
-
-        // --- LOGIKA MODAL DONASI ---
-        function openDonationModal() {
-            donationModal.style.display = 'flex';
         }
 
-        function closeDonationModal() {
-            donationModal.style.display = 'none';
+        // --- LOGIKA MULTIPLAYER FIREBASE REALTIME ---
+        function joinMultiplayerRoom() {
+            if (activeRoomPin) {
+                roomRef = db.ref(`rooms/${activeRoomPin}`);
+                let isInitialCursorLoad = true;
+
+                // 1. Atur Kursor & Nama Pemain
+                roomRef.child('cursors').once('value', (snapshot) => {
+                    const cursorsData = snapshot.val() || {};
+
+                    // Hitung urutan Player
+                    if (!savedPlayerName) {
+                        let count = Object.keys(cursorsData).length;
+                        if (!cursorsData[playerId]) count += 1;
+                        savedPlayerName = `Player ${count}`;
+                        localStorage.setItem('jigsawPlayerName', savedPlayerName);
+                    }
+
+                    playerNameInput.value = savedPlayerName;
+
+                    const myCursorRef = roomRef.child(`cursors/${playerId}`);
+                    myCursorRef.onDisconnect().remove();
+
+                    myCursorRef.update({
+                        name: savedPlayerName,
+                        color: playerColor,
+                        x: -100, y: -100
+                    });
+                });
+
+                // Sinkronkan Toggle Kunci Room & Cek Owner
+                roomRef.child('owner').on('value', (snap) => {
+                    const ownerId = snap.val();
+                    if (ownerId === playerId) {
+                        roomLockContainer.style.display = 'flex';
+                    } else {
+                        roomLockContainer.style.display = 'none';
+                    }
+                });
+
+                roomRef.child('isLocked').on('value', (snap) => {
+                    roomLockToggle.checked = !!snap.val();
+                });
+
+                // Dengar Kursor Pemain Lain & Notifikasi
+                roomRef.child('cursors').on('value', (snapshot) => {
+                    const allCursors = snapshot.val() || {};
+
+                    // Cek jika ada pemain baru untuk di-notif
+                    if (!isInitialCursorLoad) {
+                        Object.keys(allCursors).forEach(id => {
+                            if (!knownPlayers.includes(id) && id !== playerId) {
+                                const pName = allCursors[id].name || 'Pemain';
+                                showNotification(`🎮 ${pName} memasuki game`);
+                            }
+                        });
+                    }
+
+                    // Update daftar pemain yang diketahui
+                    knownPlayers = Object.keys(allCursors);
+                    isInitialCursorLoad = false;
+
+                    // Bersihkan kursor yang sudah keluar
+                    Object.keys(cursors).forEach(id => {
+                        if (!allCursors[id] && cursors[id]) {
+                            cursors[id].remove();
+                            delete cursors[id];
+                        }
+                    });
+
+                    // Update UI kursor
+                    Object.keys(allCursors).forEach(id => {
+                        if (id === playerId) return;
+                        const data = allCursors[id];
+
+                        if (!cursors[id]) {
+                            const cursorEl = document.createElement('div');
+                            cursorEl.className = 'multiplayer-cursor';
+                            cursorEl.innerHTML = `
+                                <i class="fa-solid fa-arrow-pointer cursor-icon" style="color: ${data.color}"></i>
+                                <div class="cursor-name" style="background: ${data.color}">${data.name}</div>
+                            `;
+                            document.body.appendChild(cursorEl);
+                            cursors[id] = cursorEl;
+                        }
+                        cursors[id].style.transform = `translate(${data.x}px, ${data.y}px)`;
+                        cursors[id].querySelector('.cursor-name').textContent = data.name;
+                    });
+                });
+
+                // Sinkronisasi Kepingan Awal
+                roomRef.child('pieces').once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        const fbPieces = snapshot.val();
+                        pieces.forEach(p => {
+                            if (fbPieces[p.id]) {
+                                p.currentX = fbPieces[p.id].x;
+                                p.currentY = fbPieces[p.id].y;
+                                p.groupId = fbPieces[p.id].groupId !== undefined ? fbPieces[p.id].groupId : p.groupId;
+                            }
+                        });
+                        needsRedraw = true;
+                    } else {
+                        roomRef.child('owner').set(playerId);
+                        roomRef.child('isLocked').set(false);
+                        let initialData = {};
+                        pieces.forEach(p => {
+                            initialData[p.id] = { x: p.currentX, y: p.currentY, groupId: p.groupId };
+                        });
+                        roomRef.child('pieces').set(initialData);
+                    }
+                });
+
+                // Dengarkan Pergerakan Puzzle
+                roomRef.child('pieces').on('child_changed', (snapshot) => {
+                    const pieceData = snapshot.val();
+                    const pId = parseInt(snapshot.key);
+
+                    if (activePieces.some(ap => ap.id === pId)) return;
+
+                    const p = pieces.find(piece => piece.id === pId);
+                    if (p) {
+                        p.currentX = pieceData.x;
+                        p.currentY = pieceData.y;
+                        if (pieceData.groupId !== undefined) p.groupId = pieceData.groupId;
+                        needsRedraw = true;
+                    }
+                });
+            }
         }
 
-        btnDonateMenu.addEventListener('click', openDonationModal);
-        btnDonateGame.addEventListener('click', () => {
-            dropdownMenu.classList.remove('active'); // Tutup menu saat modal terbuka
-            openDonationModal();
-        });
+        // Perbarui & Simpan Nama di Firebase dan LocalStorage
+        playerNameInput.addEventListener('input', (e) => {
+            savedPlayerName = e.target.value || 'Pemain';
+            localStorage.setItem('jigsawPlayerName', savedPlayerName);
 
-        closeDonationBtn.addEventListener('click', closeDonationModal);
-
-        // Menutup modal donasi saat klik background, tapi bukan saat klik isinya
-        donationModal.addEventListener('click', (e) => {
-            if (!donationContent.contains(e.target)) {
-                closeDonationModal();
+            if (roomRef && activeRoomPin) {
+                roomRef.child(`cursors/${playerId}`).update({ name: savedPlayerName });
             }
         });
 
-        // --- LOGIKA DROPDOWN MENU DALAM PERMAINAN ---
+        // Event Toggle Lock Room
+        roomLockToggle.addEventListener('change', (e) => {
+            if (roomRef) {
+                roomRef.update({ isLocked: e.target.checked });
+            }
+        });
+
+        // Kirim Koordinat Mouse
+        window.addEventListener('mousemove', (e) => {
+            if (activeRoomPin && gameScreen.style.display === 'block' && roomRef) {
+                roomRef.child(`cursors/${playerId}`).update({ x: e.clientX, y: e.clientY });
+            }
+        });
+
+        // --- LOGIKA MODAL DONASI ---
+        function openDonationModal() { donationModal.style.display = 'flex'; }
+        function closeDonationModal() { donationModal.style.display = 'none'; }
+        btnDonateMenu.addEventListener('click', openDonationModal);
+        btnDonateGame.addEventListener('click', () => { dropdownMenu.classList.remove('active'); openDonationModal(); });
+        closeDonationBtn.addEventListener('click', closeDonationModal);
+        donationModal.addEventListener('click', (e) => { if (!donationContent.contains(e.target)) closeDonationModal(); });
+
+        // --- LOGIKA DROPDOWN MENU ---
         menuToggleBtn.addEventListener('click', (e) => {
-            if (uiHasMoved) return; // Mencegah klik terbuka saat panel di-drag
+            if (uiHasMoved) return;
             dropdownMenu.classList.toggle('active');
         });
 
-        // Tutup dropdown jika klik di luar
         document.addEventListener('mousedown', (e) => {
             if (!e.target.closest('.top-right-wrapper')) {
                 dropdownMenu.classList.remove('active');
@@ -1075,6 +1395,14 @@
             dropdownMenu.classList.remove('active');
 
             localStorage.removeItem('jigsawSaveState');
+
+            if (roomRef) {
+                roomRef.child(`cursors/${playerId}`).remove();
+                roomRef = null;
+            }
+            activeRoomPin = '';
+            roomInput.value = ''; // Kosongkan saat kembali ke menu
+
             updateSelectionUI();
         });
 
@@ -1085,12 +1413,7 @@
             needsRedraw = true;
         });
 
-        // Thumbnail Listener
-        thumbImg.addEventListener('click', () => {
-            if (uiHasMoved) return;
-            fullImageModal.style.display = 'flex';
-        });
-
+        thumbImg.addEventListener('click', () => { if (!uiHasMoved) fullImageModal.style.display = 'flex'; });
         fullImageModal.addEventListener('click', () => { fullImageModal.style.display = 'none'; });
 
         function resizeCanvas() {
@@ -1105,10 +1428,7 @@
             clearInterval(timerInterval);
             secondsElapsed = initialSeconds;
             updateTimerDisplay();
-            timerInterval = setInterval(() => {
-                secondsElapsed++;
-                updateTimerDisplay();
-            }, 1000);
+            timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000);
         }
 
         function updateTimerDisplay() {
@@ -1124,12 +1444,9 @@
             const currentData = puzzleImages[currentImageIndex];
             imgObj = new Image();
             imgObj.src = currentData.url;
-            imgObj.onload = setupPuzzleAndScatter;
-            imgObj.onerror = () => {
-                clearInterval(timerInterval);
-                alert('Gagal memuat gambar.');
-                gameScreen.style.display = 'none';
-                selectionScreen.style.display = 'flex';
+            imgObj.onload = () => {
+                setupPuzzleAndScatter();
+                joinMultiplayerRoom();
             };
         }
 
@@ -1163,10 +1480,7 @@
         }
 
         function setupPuzzleAndScatter() {
-            pieces = [];
-            activePieces = [];
-            dragOffsets = [];
-
+            pieces = []; activePieces = []; dragOffsets = [];
             let cols, rows;
             if (pieceCount === 100) { cols = 10; rows = 10; }
             else if (pieceCount === 200) { cols = 16; rows = 12; }
@@ -1177,11 +1491,8 @@
             const maxBoardH = canvas.height * 0.65;
             const imgAspect = imgObj.width / imgObj.height;
 
-            if (maxBoardW / maxBoardH > imgAspect) {
-                boardHeight = maxBoardH; boardWidth = maxBoardH * imgAspect;
-            } else {
-                boardWidth = maxBoardW; boardHeight = maxBoardW / imgAspect;
-            }
+            if (maxBoardW / maxBoardH > imgAspect) { boardHeight = maxBoardH; boardWidth = maxBoardH * imgAspect; }
+            else { boardWidth = maxBoardW; boardHeight = maxBoardW / imgAspect; }
 
             boardX = (canvas.width - boardWidth) / 2;
             boardY = ((canvas.height - boardHeight) / 2) + 20;
@@ -1201,15 +1512,13 @@
                         left: c === 0 ? 0 : -verticalEdges[r][c - 1]
                     };
 
-                    const path = createPiecePath(pieceW, pieceH, edges);
-
                     const randomX = Math.random() * (canvas.width - pieceW);
                     const randomY = Math.max(150, Math.random() * (canvas.height - pieceH));
                     const pId = r * cols + c;
 
                     pieces.push({
                         id: pId, groupId: pId, r, c, pieceW, pieceH,
-                        currentX: randomX, currentY: randomY, edges, path
+                        currentX: randomX, currentY: randomY, edges, path: createPiecePath(pieceW, pieceH, edges)
                     });
                 }
             }
@@ -1218,13 +1527,10 @@
             saveGameState();
         }
 
-        // FUNGSI RENDER DIOPTIMISASI
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             ctx.strokeStyle = "rgba(100, 116, 139, 0.4)";
-            ctx.lineWidth = 2;
-            ctx.setLineDash([8, 8]);
+            ctx.lineWidth = 2; ctx.setLineDash([8, 8]);
             ctx.strokeRect(boardX, boardY, boardWidth, boardHeight);
             ctx.setLineDash([]);
 
@@ -1234,12 +1540,9 @@
                 ctx.translate(p.currentX, p.currentY);
 
                 if (isDragging) {
-                    ctx.shadowColor = "rgba(0,0,0,0.5)";
-                    ctx.shadowBlur = 15;
-                    ctx.shadowOffsetX = 8;
-                    ctx.shadowOffsetY = 8;
-                    ctx.fillStyle = "#fff";
-                    ctx.fill(p.path);
+                    ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 15;
+                    ctx.shadowOffsetX = 8; ctx.shadowOffsetY = 8;
+                    ctx.fillStyle = "#fff"; ctx.fill(p.path);
                 }
 
                 ctx.save();
@@ -1247,19 +1550,13 @@
                 ctx.drawImage(imgObj, -p.c * p.pieceW, -p.r * p.pieceH, boardWidth, boardHeight);
                 ctx.restore();
 
-                ctx.lineWidth = 1.2;
-                ctx.strokeStyle = "rgba(0, 0, 0, 0.35)";
-                ctx.stroke(p.path);
-
+                ctx.lineWidth = 1.2; ctx.strokeStyle = "rgba(0, 0, 0, 0.35)"; ctx.stroke(p.path);
                 ctx.restore();
             }
         }
 
         function gameLoop() {
-            if (needsRedraw && gameScreen.style.display === 'block') {
-                render();
-                needsRedraw = false;
-            }
+            if (needsRedraw && gameScreen.style.display === 'block') { render(); needsRedraw = false; }
             requestAnimationFrame(gameLoop);
         }
 
@@ -1271,7 +1568,6 @@
         }
 
         function onPointerDown(e) {
-            // Abaikan klik jika mengenai elemen floating UI atau menu Dropdown
             if (e.target.closest('.floating-ui') || e.target.closest('.dropdown-menu')) return;
             if (e.cancelable) e.preventDefault();
 
@@ -1281,20 +1577,14 @@
             for (let i = pieces.length - 1; i >= 0; i--) {
                 const p = pieces[i];
                 if (ctx.isPointInPath(p.path, pos.x - p.currentX, pos.y - p.currentY)) {
-                    clickedPiece = p;
-                    break;
+                    clickedPiece = p; break;
                 }
             }
 
             if (clickedPiece) {
                 activePieces = pieces.filter(p => p.groupId === clickedPiece.groupId);
                 pieces = pieces.filter(p => p.groupId !== clickedPiece.groupId).concat(activePieces);
-
-                dragOffsets = activePieces.map(p => ({
-                    id: p.id,
-                    dx: pos.x - p.currentX,
-                    dy: pos.y - p.currentY
-                }));
+                dragOffsets = activePieces.map(p => ({ id: p.id, dx: pos.x - p.currentX, dy: pos.y - p.currentY }));
                 needsRedraw = true;
             }
         }
@@ -1302,17 +1592,13 @@
         function onPointerMove(e) {
             if (activePieces.length === 0) return;
             const pos = getPointerPos(e);
-
-            let minNewX = Infinity, minNewY = Infinity;
-            let maxNewX = -Infinity, maxNewY = -Infinity;
+            let minNewX = Infinity, minNewY = Infinity, maxNewX = -Infinity, maxNewY = -Infinity;
 
             activePieces.forEach(p => {
                 const offset = dragOffsets.find(o => o.id === p.id);
                 if (offset) {
-                    let nx = pos.x - offset.dx;
-                    let ny = pos.y - offset.dy;
-                    if (nx < minNewX) minNewX = nx;
-                    if (ny < minNewY) minNewY = ny;
+                    let nx = pos.x - offset.dx, ny = pos.y - offset.dy;
+                    if (nx < minNewX) minNewX = nx; if (ny < minNewY) minNewY = ny;
                     if (nx + p.pieceW > maxNewX) maxNewX = nx + p.pieceW;
                     if (ny + p.pieceH > maxNewY) maxNewY = ny + p.pieceH;
                 }
@@ -1321,7 +1607,6 @@
             let shiftX = 0, shiftY = 0;
             if (maxNewX > canvas.width) shiftX = canvas.width - maxNewX;
             if (minNewX + shiftX < 0) shiftX = -minNewX;
-
             if (maxNewY > canvas.height) shiftY = canvas.height - maxNewY;
             if (minNewY + shiftY < 0) shiftY = -minNewY;
 
@@ -1330,6 +1615,10 @@
                 if (offset) {
                     p.currentX = pos.x - offset.dx + shiftX;
                     p.currentY = pos.y - offset.dy + shiftY;
+
+                    if (activeRoomPin && roomRef) {
+                        roomRef.child(`pieces/${p.id}`).update({ x: p.currentX, y: p.currentY });
+                    }
                 }
             });
             needsRedraw = true;
@@ -1337,23 +1626,18 @@
 
         function onPointerUp() {
             if (activePieces.length === 0) return;
-
             const snapTolerance = 25;
             let snapped = false;
 
             for (let pA of activePieces) {
                 if (snapped) break;
-
                 for (let pB of pieces) {
                     if (pA.groupId === pB.groupId) continue;
-
                     const isNeighbor = (Math.abs(pA.r - pB.r) === 1 && pA.c === pB.c) || (Math.abs(pA.c - pB.c) === 1 && pA.r === pB.r);
                     if (!isNeighbor) continue;
 
-                    const expectedDx = (pA.c - pB.c) * pA.pieceW;
-                    const expectedDy = (pA.r - pB.r) * pA.pieceH;
-                    const actualDx = pA.currentX - pB.currentX;
-                    const actualDy = pA.currentY - pB.currentY;
+                    const expectedDx = (pA.c - pB.c) * pA.pieceW, expectedDy = (pA.r - pB.r) * pA.pieceH;
+                    const actualDx = pA.currentX - pB.currentX, actualDy = pA.currentY - pB.currentY;
 
                     if (Math.hypot(actualDx - expectedDx, actualDy - expectedDy) < snapTolerance) {
                         const shiftX = (pB.currentX + expectedDx) - pA.currentX;
@@ -1361,36 +1645,33 @@
                         const newGroupId = pB.groupId;
 
                         activePieces.forEach(p => { p.currentX += shiftX; p.currentY += shiftY; p.groupId = newGroupId; });
-                        snapped = true;
-                        break;
+                        snapped = true; break;
                     }
                 }
             }
 
-            activePieces = [];
-            dragOffsets = [];
-            needsRedraw = true;
+            if (snapped && activeRoomPin && roomRef) {
+                activePieces.forEach(p => {
+                    roomRef.child(`pieces/${p.id}`).update({ x: p.currentX, y: p.currentY, groupId: p.groupId });
+                });
+            }
 
-            saveGameState();
-            checkWinCondition();
+            activePieces = []; dragOffsets = []; needsRedraw = true;
+            saveGameState(); checkWinCondition();
         }
 
         function checkWinCondition() {
             if (pieces.length > 0) {
                 const firstGroupId = pieces[0].groupId;
-                const allSame = pieces.every(p => p.groupId === firstGroupId);
-
-                if (allSame) {
+                if (pieces.every(p => p.groupId === firstGroupId)) {
                     clearInterval(timerInterval);
                     const head = pieces.find(p => p.r === 0 && p.c === 0);
-                    const shiftX = boardX - head.currentX;
-                    const shiftY = boardY - head.currentY;
+                    const shiftX = boardX - head.currentX, shiftY = boardY - head.currentY;
                     pieces.forEach(p => { p.currentX += shiftX; p.currentY += shiftY; });
                     needsRedraw = true;
 
                     document.getElementById('win-time').textContent = `Waktu Anda: ${timerEl.textContent}`;
                     winModal.style.display = 'block';
-
                     localStorage.removeItem('jigsawSaveState');
                 }
             }
@@ -1398,27 +1679,17 @@
 
         // --- LOGIKA DRAG PANEL UI ---
         const floatingUIs = document.querySelectorAll('.top-left-ui, .top-right-wrapper');
-        let activeUIDrag = null;
-        let uiDragOffsetX = 0;
-        let uiDragOffsetY = 0;
+        let activeUIDrag = null, uiDragOffsetX = 0, uiDragOffsetY = 0;
 
         function onUIDragStart(e) {
-            // PERBAIKAN: Paksa target drag ke elemen induk (wrapper) agar tidak tercecer
             const uiEl = e.target.closest('.top-right-wrapper') || e.target.closest('.top-left-ui');
-
-            // Abaikan jika klik berasal dari dalam dropdown
             if (!uiEl || e.target.closest('.dropdown-menu')) return;
 
-            activeUIDrag = uiEl;
-            isUIDragging = true;
-            uiHasMoved = false;
-
+            activeUIDrag = uiEl; isUIDragging = true; uiHasMoved = false;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             const rect = activeUIDrag.getBoundingClientRect();
-
-            uiDragOffsetX = clientX - rect.left;
-            uiDragOffsetY = clientY - rect.top;
+            uiDragOffsetX = clientX - rect.left; uiDragOffsetY = clientY - rect.top;
         }
 
         function onUIDragMove(e) {
@@ -1426,47 +1697,26 @@
             uiHasMoved = true;
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-            let newX = clientX - uiDragOffsetX;
-            let newY = clientY - uiDragOffsetY;
-
+            let newX = clientX - uiDragOffsetX, newY = clientY - uiDragOffsetY;
             newX = Math.max(0, Math.min(window.innerWidth - activeUIDrag.offsetWidth, newX));
             newY = Math.max(0, Math.min(window.innerHeight - activeUIDrag.offsetHeight, newY));
-
-            activeUIDrag.style.left = `${newX}px`;
-            activeUIDrag.style.top = `${newY}px`;
-            activeUIDrag.style.right = 'auto';
+            activeUIDrag.style.left = `${newX}px`; activeUIDrag.style.top = `${newY}px`; activeUIDrag.style.right = 'auto';
         }
 
-        function onUIDragEnd() {
-            activeUIDrag = null;
-            isUIDragging = false;
-        }
+        function onUIDragEnd() { activeUIDrag = null; isUIDragging = false; }
 
         floatingUIs.forEach(ui => {
             ui.addEventListener('mousedown', onUIDragStart);
             ui.addEventListener('touchstart', onUIDragStart, { passive: false });
         });
+        window.addEventListener('mousemove', onUIDragMove); window.addEventListener('mouseup', onUIDragEnd);
+        window.addEventListener('touchmove', onUIDragMove, { passive: false }); window.addEventListener('touchend', onUIDragEnd);
 
-        window.addEventListener('mousemove', onUIDragMove);
-        window.addEventListener('mouseup', onUIDragEnd);
-        window.addEventListener('touchmove', onUIDragMove, { passive: false });
-        window.addEventListener('touchend', onUIDragEnd);
-
-        // --- EVENT LISTENERS TAMBAHAN ---
         playAgainBtn.addEventListener('click', initGame);
-        canvas.addEventListener('mousedown', onPointerDown);
-        window.addEventListener('mousemove', onPointerMove);
-        window.addEventListener('mouseup', onPointerUp);
-        canvas.addEventListener('touchstart', onPointerDown, { passive: false });
-        window.addEventListener('touchmove', onPointerMove, { passive: false });
-        window.addEventListener('touchend', onPointerUp);
+        canvas.addEventListener('mousedown', onPointerDown); window.addEventListener('mousemove', onPointerMove); window.addEventListener('mouseup', onPointerUp);
+        canvas.addEventListener('touchstart', onPointerDown, { passive: false }); window.addEventListener('touchmove', onPointerMove, { passive: false }); window.addEventListener('touchend', onPointerUp);
 
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden' && gameScreen.style.display === 'block') {
-                saveGameState();
-            }
-        });
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && gameScreen.style.display === 'block') saveGameState(); });
 
         const savedTheme = localStorage.getItem('jigsawDarkTheme');
         if (savedTheme === 'true') {
@@ -1474,81 +1724,8 @@
             dropdownThemeBtn.innerHTML = '<i class="fa-solid fa-sun"></i> Tema Terang';
         }
 
-        if (!loadGameState()) {
-            updateSelectionUI();
-        }
-
+        if (!loadGameState()) updateSelectionUI();
         requestAnimationFrame(gameLoop);
-
-        // --- LOGIKA MULTIPLAYER SOCKET.IO ---
-        // GANTI URL DI BAWAH DENGAN URL RENDER ANDA!
-        const socket = io("https://URL-RENDER-ANDA.onrender.com");
-        const cursors = {}; // Menyimpan elemen kursor teman
-        const playerNameInput = document.getElementById('player-name-input');
-
-        // Update Nama saat input berubah
-        playerNameInput.addEventListener('input', (e) => {
-            socket.emit('updateName', e.target.value);
-        });
-
-        // Join Room saat permainan dimulai
-        startBtn.addEventListener('click', () => {
-            // ... (kode startBtn Anda yang sudah ada) ...
-
-            // Beri tahu server bahwa kita masuk room ini
-            if (activeRoomPin !== 'Offline') {
-                socket.emit('joinRoom', {
-                    room: activeRoomPin,
-                    name: playerNameInput.value || 'Pemain Anonim'
-                });
-            }
-        });
-
-        // Broadcast Kursor kita ke server saat mouse bergerak
-        window.addEventListener('mousemove', (e) => {
-            if (activeRoomPin !== 'Offline' && gameScreen.style.display === 'block') {
-                socket.emit('cursorMove', { x: e.clientX, y: e.clientY });
-            }
-        });
-
-        // Menerima Kursor Teman
-        socket.on('cursorMoved', (data) => {
-            if (!cursors[data.id]) {
-                // Buat elemen kursor baru jika belum ada
-                const cursorEl = document.createElement('div');
-                cursorEl.className = 'multiplayer-cursor';
-                cursorEl.innerHTML = `
-            <i class="fa-solid fa-arrow-pointer cursor-icon" style="color: ${data.color}"></i>
-            <div class="cursor-name" style="background: ${data.color}">${data.name}</div>
-        `;
-                document.body.appendChild(cursorEl);
-                cursors[data.id] = cursorEl;
-            }
-            // Update posisi dan nama
-            cursors[data.id].style.transform = `translate(${data.x}px, ${data.y}px)`;
-            cursors[data.id].querySelector('.cursor-name').textContent = data.name;
-        });
-
-        // Menghapus kursor jika teman keluar
-        socket.on('playerLeft', (id) => {
-            if (cursors[id]) {
-                cursors[id].remove();
-                delete cursors[id];
-            }
-        });
-
-        // KODE PENTING UNTUK MENYINKRONKAN PUZZLE
-        socket.on('pieceMoved', (data) => {
-            // Kapanpun teman menggeser puzzle, update array pieces kita
-            // Data berisi { idKepingan, xBaru, yBaru, groupIdBaru }
-            const p = pieces.find(piece => piece.id === data.id);
-            if (p) {
-                p.currentX = data.x;
-                p.currentY = data.y;
-                if (data.groupId !== undefined) p.groupId = data.groupId;
-                needsRedraw = true;
-            }
-        });
     </script>
 </body>
 
