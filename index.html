@@ -1058,9 +1058,9 @@
                             style="padding: 8px; font-size: 0.9rem; margin-left: 5px; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: var(--text-main);">
                     </div>
 
-                    <div class="dropdown-item no-hover" id="room-lock-container" title="Cegah orang lain bergabung"
+                    <div class="dropdown-item no-hover" id="room-lock-container" title="Izinkan orang lain bergabung"
                         style="display: none;">
-                        <i class="fa-solid fa-lock"></i> Kunci Room
+                        <i class="fa-solid fa-unlock"></i> Publik
                         <label class="switch">
                             <input type="checkbox" id="room-lock-toggle">
                             <span class="slider"></span>
@@ -1446,7 +1446,7 @@
                 });
 
                 roomRef.child('isLocked').on('value', (snap) => {
-                    roomLockToggle.checked = !!snap.val();
+                    roomLockToggle.checked = !snap.val();
                 });
 
                 roomRef.child('cursors').on('value', (snapshot) => {
@@ -1514,7 +1514,7 @@
                         needsRedraw = true;
                     } else {
                         roomRef.child('owner').set(playerId);
-                        roomRef.child('isLocked').set(false);
+                        roomRef.child('isLocked').set(true);
                         roomRef.child('startTime').set(Date.now());
                         let initialData = {};
                         pieces.forEach(p => {
@@ -1652,7 +1652,7 @@
 
         roomLockToggle.addEventListener('change', (e) => {
             if (roomRef) {
-                roomRef.update({ isLocked: e.target.checked });
+                roomRef.update({ isLocked: !e.target.checked });
             }
         });
 
