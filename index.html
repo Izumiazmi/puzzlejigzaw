@@ -43,6 +43,77 @@
             height: 100vh;
         }
 
+        /* ===== NOTIFIKASI INSTAGRAM ===== */
+        .instagram-notification {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 99999;
+            background: linear-gradient(135deg, #feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5);
+            padding: 12px 24px 12px 20px;
+            border-radius: 40px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            max-width: 90%;
+            white-space: nowrap;
+            width: auto;
+            /* PERBAIKAN: agar tidak melebar */
+        }
+
+        .instagram-notification a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.4);
+            padding-bottom: 1px;
+            transition: border-color 0.2s;
+        }
+
+        .instagram-notification a:hover {
+            border-color: #fff;
+        }
+
+        .instagram-notification .close-instagram {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+            transition: color 0.2s;
+            margin-left: 4px;
+        }
+
+        .instagram-notification .close-instagram:hover {
+            color: #fff;
+        }
+
+        .instagram-notification i {
+            font-size: 1.3rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        @media (max-width: 600px) {
+            .instagram-notification {
+                font-size: 0.8rem;
+                padding: 10px 16px 10px 14px;
+                white-space: normal;
+                text-align: center;
+                width: 95%;
+                top: 10px;
+            }
+        }
+
         .multiplayer-cursor {
             position: absolute;
             top: 0;
@@ -75,7 +146,8 @@
 
         #notification-container {
             position: absolute;
-            top: 24px;
+            top: 80px;
+            /* PERBAIKAN: beri jarak agar tidak tertutup notif instagram */
             left: 50%;
             transform: translateX(-50%);
             z-index: 10000;
@@ -437,6 +509,8 @@
 
         .top-left-ui {
             left: 24px;
+            top: 24px;
+            /* PERBAIKAN: beri jarak atas agar sejajar dengan hamburger */
             flex-direction: column;
             align-items: flex-start;
         }
@@ -449,7 +523,6 @@
             display: flex;
             gap: 15px;
             align-items: flex-start;
-            /* FIX: Menetapkan lebar awal agar layout tidak berubah saat salah satu di-drag */
             width: auto;
         }
 
@@ -953,6 +1026,13 @@
 </head>
 
 <body>
+    <!-- NOTIFIKASI INSTAGRAM -->
+    <div id="instagram-notification" class="instagram-notification" style="display: none;">
+        <i class="fab fa-instagram"></i>
+        <span>Ikuti kami di <a href="https://www.instagram.com/azmi_14.11/" target="_blank">@azmi_14.11</a></span>
+        <button class="close-instagram" id="close-instagram-btn">&times;</button>
+    </div>
+
     <!-- LAYAR PEMILIHAN -->
     <div id="selection-screen">
         <div class="preview-section">
@@ -1088,6 +1168,42 @@
     </div>
 
     <script>
+        // ===================== NOTIFIKASI INSTAGRAM =====================
+        (function () {
+            const notif = document.getElementById('instagram-notification');
+            const closeBtn = document.getElementById('close-instagram-btn');
+            const STORAGE_KEY = 'instagram_notif_closed_time';
+            const INTERVAL_MS = 30 * 60 * 1000; // 30 menit
+
+            function shouldShow() {
+                const closedTime = localStorage.getItem(STORAGE_KEY);
+                if (!closedTime) return true;
+                const elapsed = Date.now() - parseInt(closedTime, 10);
+                return elapsed > INTERVAL_MS;
+            }
+
+            function showNotif() {
+                notif.style.display = 'flex';
+            }
+
+            function hideNotif() {
+                notif.style.display = 'none';
+                localStorage.setItem(STORAGE_KEY, Date.now().toString());
+            }
+
+            closeBtn.addEventListener('click', hideNotif);
+
+            if (shouldShow()) {
+                showNotif();
+            }
+
+            setInterval(() => {
+                if (shouldShow() && notif.style.display !== 'flex') {
+                    showNotif();
+                }
+            }, 60000);
+        })();
+
         // ===================== FIREBASE =====================
         const firebaseConfig = { databaseURL: "https://jigsaw-backend-eb853-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
@@ -1995,7 +2111,6 @@
             let targetGroupId = null;
             let draggedGroupId = activePieces[0].groupId;
 
-            // Cari snap
             for (let pA of activePieces) {
                 if (snapped) break;
                 for (let pB of pieces) {
@@ -2017,7 +2132,6 @@
             }
 
             if (snapped && targetGroupId !== null) {
-                // Geser SEMUA kepingan dalam grup yang di-drag
                 pieces.forEach(p => {
                     if (p.groupId === draggedGroupId) {
                         p.currentX += shiftX;
@@ -2026,7 +2140,6 @@
                     }
                 });
 
-                // Update Firebase untuk semua kepingan yang berubah groupId
                 if (activeRoomPin && roomRef) {
                     pieces.forEach(p => {
                         if (p.groupId === targetGroupId && p.groupId !== draggedGroupId) {
@@ -2046,7 +2159,6 @@
                 return;
             }
 
-            // Jika tidak snap, kosongkan activePieces
             activePieces = [];
             dragOffsets = [];
             needsRedraw = true;
@@ -2074,9 +2186,7 @@
                     showNotification('Kepingan ini sudah sendiri.');
                     return;
                 }
-                // Lepaskan kepingan dari grup
-                clickedPiece.groupId = clickedPiece.id; // id unik
-                // Geser sedikit agar terlihat terpisah
+                clickedPiece.groupId = clickedPiece.id;
                 clickedPiece.currentX += (Math.random() - 0.5) * 40;
                 clickedPiece.currentY += (Math.random() - 0.5) * 40;
                 needsRedraw = true;
@@ -2089,7 +2199,7 @@
                     });
                 }
                 showNotification('Kepingan dilepaskan dari grup.');
-                checkWin(); // Cek apakah masih menang (tidak mungkin karena dipecah)
+                checkWin();
             }
         });
 
