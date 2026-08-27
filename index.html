@@ -1191,7 +1191,6 @@
         let isGameOver = false;
 
         // ===================== SAVE / LOAD STATE =====================
-        // FIX: Menggunakan koordinat relatif terhadap papan (Board)
         function saveGameState() {
             if (pieces.length === 0) return;
             const state = {
@@ -1259,7 +1258,6 @@
                     boardY = ((canvas.height - boardHeight) / 2) + 20;
                     const pieceW = boardWidth / cols;
                     const pieceH = boardHeight / rows;
-                    // FIX: Merekonstruksi posisi dari koordinat relatif papan
                     pieces = state.piecesData.map(pData => {
                         const path = createPiecePath(pieceW, pieceH, pData.edges);
                         let currX = pData.rx !== undefined ? boardX + (pData.rx * boardWidth) : (pData.currentX || 0);
@@ -1354,7 +1352,6 @@
             roomRef = db.ref(`rooms/${activeRoomPin}`);
             let isInitialCursorLoad = true;
 
-            // ---- CURSORS ----
             roomRef.child('cursors').once('value', (snapshot) => {
                 const cursorsData = snapshot.val() || {};
                 if (!savedPlayerName) {
@@ -1420,13 +1417,11 @@
                 });
             });
 
-            // ---- PIECES ----
             roomRef.child('pieces').once('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const fbPieces = snapshot.val();
                     pieces.forEach(p => {
                         if (fbPieces[p.id]) {
-                            // FIX: Menggunakan koordinat relatif papan
                             if (fbPieces[p.id].rx !== undefined) {
                                 p.currentX = boardX + (fbPieces[p.id].rx * boardWidth);
                                 p.currentY = boardY + (fbPieces[p.id].ry * boardHeight);
@@ -1436,14 +1431,12 @@
                     });
                     needsRedraw = true;
                 } else {
-                    // Owner: kirim data awal
                     roomRef.child('owner').set(playerId);
                     roomRef.child('isLocked').set(true);
                     roomRef.child('startTime').set(Date.now());
                     let initialData = {};
                     pieces.forEach(p => {
                         initialData[p.id] = {
-                            // FIX: Menggunakan koordinat relatif papan
                             rx: (p.currentX - boardX) / boardWidth,
                             ry: (p.currentY - boardY) / boardHeight,
                             groupId: p.groupId
@@ -1454,14 +1447,12 @@
                 isInitialPiecesLoad = false;
             });
 
-            // child_added & child_changed
             roomRef.child('pieces').on('child_added', (snapshot) => {
                 if (isInitialPiecesLoad) return;
                 const pieceData = snapshot.val();
                 const pId = parseInt(snapshot.key);
                 const p = pieces.find(piece => piece.id === pId);
                 if (p) {
-                    // FIX: Menggunakan koordinat relatif papan
                     if (pieceData.rx !== undefined) {
                         p.currentX = boardX + (pieceData.rx * boardWidth);
                         p.currentY = boardY + (pieceData.ry * boardHeight);
@@ -1477,7 +1468,6 @@
                 if (activePieces.some(ap => ap.id === pId)) return;
                 const p = pieces.find(piece => piece.id === pId);
                 if (p) {
-                    // FIX: Menggunakan koordinat relatif papan
                     if (pieceData.rx !== undefined) {
                         p.currentX = boardX + (pieceData.rx * boardWidth);
                         p.currentY = boardY + (pieceData.ry * boardHeight);
@@ -1487,7 +1477,6 @@
                 }
             });
 
-            // ---- START TIME ----
             roomRef.child('startTime').on('value', (snap) => {
                 if (snap.exists()) {
                     const startTime = snap.val();
@@ -1499,7 +1488,6 @@
                 }
             });
 
-            // ---- GAME OVER LISTENER ----
             if (gameOverListener) gameOverListener.off();
             gameOverListener = roomRef.child('gameOver');
             gameOverListener.on('value', (snap) => {
@@ -1511,7 +1499,6 @@
                 }
             });
 
-            // ---- CHAT ----
             roomRef.child('chat').off('child_added');
             chatMessages.innerHTML = '';
             function renderChatMessage(msg, allowNotification) {
@@ -1540,7 +1527,6 @@
                 });
             });
 
-            // ---- DETEKSI ROOM HAPUS ----
             roomRef.on('value', (snap) => {
                 if (!snap.exists()) {
                     exitGame('Room telah ditutup oleh pemilik.');
@@ -1559,7 +1545,6 @@
             chatMenu.classList.remove('active');
             localStorage.removeItem('jigsawSaveState');
 
-            // Reset transform UI ke posisi semula
             floatingUIs.forEach(ui => {
                 ui.style.transform = 'translate(0, 0)';
             });
@@ -1986,44 +1971,7 @@
             needsRedraw = true;
         }
 
-        function onPointerUp() {
-            if (activePieces.length === 0 || isGameOver) return;
-            const snapTolerance = 25;
-            let snapped = false;
-            for (let pA of activePieces) {
-                if (snapped) break;
-                for (let pB of pieces) {
-                    if (pA.groupId === pB.groupId) continue;
-                    const isNeighbor = (Math.abs(pA.r - pB.r) === 1 && pA.c === pB.c) || (Math.abs(pA.c - pB.c) === 1 && pA.r === pB.r);
-                    if (!isNeighbor) continue;
-                    const expectedDx = (pA.c - pB.c) * pA.pieceW;
-                    const expectedDy = (pA.r - pB.r) * pA.pieceH;
-                    const actualDx = pA.currentX - pB.currentX;
-                    const actualDy = pA.currentY - pB.currentY;
-                    if (Math.hypot(actualDx - expectedDx, actualDy - expectedDy) < snapTolerance) {
-                        const shiftX = (pB.currentX + expectedDx) - pA.currentX;
-                        const shiftY = (pB.currentY + expectedDy) - pA.currentY;
-                        const newGroupId = pB.groupId;
-                        activePieces.forEach(p => { p.currentX += shiftX; p.currentY += shiftY; p.groupId = newGroupId; });
-                        snapped = true;
-                        break;
-                    }
-                }
-            }
-            if (snapped && activeRoomPin && roomRef) {
-                activePieces.forEach(p => {
-                    roomRef.child(`pieces/${p.id}`).update({
-                        rx: (p.currentX - boardX) / boardWidth,
-                        ry: (p.currentY - boardY) / boardHeight,
-                        groupId: p.groupId
-                    });
-                });
-            }
-            activePieces = [];
-            dragOffsets = [];
-            needsRedraw = true;
-            saveGameState();
-            // Cek kemenangan secara lokal
+        function checkWin() {
             if (!isGameOver && pieces.length > 0) {
                 const firstGroupId = pieces[0].groupId;
                 if (pieces.every(p => p.groupId === firstGroupId)) {
@@ -2039,11 +1987,117 @@
             }
         }
 
+        function onPointerUp() {
+            if (activePieces.length === 0 || isGameOver) return;
+            const snapTolerance = 25;
+            let snapped = false;
+            let shiftX = 0, shiftY = 0;
+            let targetGroupId = null;
+            let draggedGroupId = activePieces[0].groupId;
+
+            // Cari snap
+            for (let pA of activePieces) {
+                if (snapped) break;
+                for (let pB of pieces) {
+                    if (pA.groupId === pB.groupId) continue;
+                    const isNeighbor = (Math.abs(pA.r - pB.r) === 1 && pA.c === pB.c) || (Math.abs(pA.c - pB.c) === 1 && pA.r === pB.r);
+                    if (!isNeighbor) continue;
+                    const expectedDx = (pA.c - pB.c) * pA.pieceW;
+                    const expectedDy = (pA.r - pB.r) * pA.pieceH;
+                    const actualDx = pA.currentX - pB.currentX;
+                    const actualDy = pA.currentY - pB.currentY;
+                    if (Math.hypot(actualDx - expectedDx, actualDy - expectedDy) < snapTolerance) {
+                        shiftX = (pB.currentX + expectedDx) - pA.currentX;
+                        shiftY = (pB.currentY + expectedDy) - pA.currentY;
+                        targetGroupId = pB.groupId;
+                        snapped = true;
+                        break;
+                    }
+                }
+            }
+
+            if (snapped && targetGroupId !== null) {
+                // Geser SEMUA kepingan dalam grup yang di-drag
+                pieces.forEach(p => {
+                    if (p.groupId === draggedGroupId) {
+                        p.currentX += shiftX;
+                        p.currentY += shiftY;
+                        p.groupId = targetGroupId;
+                    }
+                });
+
+                // Update Firebase untuk semua kepingan yang berubah groupId
+                if (activeRoomPin && roomRef) {
+                    pieces.forEach(p => {
+                        if (p.groupId === targetGroupId && p.groupId !== draggedGroupId) {
+                            roomRef.child(`pieces/${p.id}`).update({
+                                rx: (p.currentX - boardX) / boardWidth,
+                                ry: (p.currentY - boardY) / boardHeight,
+                                groupId: p.groupId
+                            });
+                        }
+                    });
+                }
+                activePieces = [];
+                dragOffsets = [];
+                needsRedraw = true;
+                saveGameState();
+                checkWin();
+                return;
+            }
+
+            // Jika tidak snap, kosongkan activePieces
+            activePieces = [];
+            dragOffsets = [];
+            needsRedraw = true;
+            saveGameState();
+            checkWin();
+        }
+
+        // ===================== CONTEXT MENU (Klik Kanan) =====================
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            if (isGameOver) return;
+            const pos = getPointerPos(e);
+            let clickedPiece = null;
+            for (let i = pieces.length - 1; i >= 0; i--) {
+                const p = pieces[i];
+                if (ctx.isPointInPath(p.path, pos.x - p.currentX, pos.y - p.currentY)) {
+                    clickedPiece = p;
+                    break;
+                }
+            }
+            if (clickedPiece) {
+                const oldGroupId = clickedPiece.groupId;
+                const groupSize = pieces.filter(p => p.groupId === oldGroupId).length;
+                if (groupSize === 1) {
+                    showNotification('Kepingan ini sudah sendiri.');
+                    return;
+                }
+                // Lepaskan kepingan dari grup
+                clickedPiece.groupId = clickedPiece.id; // id unik
+                // Geser sedikit agar terlihat terpisah
+                clickedPiece.currentX += (Math.random() - 0.5) * 40;
+                clickedPiece.currentY += (Math.random() - 0.5) * 40;
+                needsRedraw = true;
+                saveGameState();
+                if (activeRoomPin && roomRef) {
+                    roomRef.child(`pieces/${clickedPiece.id}`).update({
+                        rx: (clickedPiece.currentX - boardX) / boardWidth,
+                        ry: (clickedPiece.currentY - boardY) / boardHeight,
+                        groupId: clickedPiece.groupId
+                    });
+                }
+                showNotification('Kepingan dilepaskan dari grup.');
+                checkWin(); // Cek apakah masih menang (tidak mungkin karena dipecah)
+            }
+        });
+
         // ===================== DRAGGABLE UI (FIXED dengan transform) =====================
         let activeUIDrag = null, uiDragOffsetX = 0, uiDragOffsetY = 0;
         let uiDragStartX = 0, uiDragStartY = 0;
         let uiInitialLeft = 0, uiInitialTop = 0;
-        let baseTransformX = 0, baseTransformY = 0; // <-- tambahan
+        let baseTransformX = 0, baseTransformY = 0;
 
         const UI_DRAG_THRESHOLD = 6;
 
@@ -2066,7 +2120,6 @@
             uiDragOffsetX = clientX - rect.left;
             uiDragOffsetY = clientY - rect.top;
 
-            // === BACA TRANSFORMASI YANG SUDAH ADA ===
             const transform = activeUIDrag.style.transform || '';
             let tx = 0, ty = 0;
             if (transform && transform !== 'none') {
@@ -2094,7 +2147,6 @@
             let newX = clientX - uiDragOffsetX;
             let newY = clientY - uiDragOffsetY;
 
-            // Clamp agar tidak keluar layar
             const maxX = window.innerWidth - activeUIDrag.offsetWidth;
             const maxY = window.innerHeight - activeUIDrag.offsetHeight;
             newX = Math.max(0, Math.min(maxX, newX));
@@ -2103,7 +2155,6 @@
             const deltaX = newX - uiInitialLeft;
             const deltaY = newY - uiInitialTop;
 
-            // TOTAL = basis (sebelumnya) + perpindahan dari awal drag
             const totalX = baseTransformX + deltaX;
             const totalY = baseTransformY + deltaY;
 
