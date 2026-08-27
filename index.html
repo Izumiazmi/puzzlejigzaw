@@ -2043,6 +2043,7 @@
         let activeUIDrag = null, uiDragOffsetX = 0, uiDragOffsetY = 0;
         let uiDragStartX = 0, uiDragStartY = 0;
         let uiInitialLeft = 0, uiInitialTop = 0;
+        let baseTransformX = 0, baseTransformY = 0; // <-- tambahan
 
         const UI_DRAG_THRESHOLD = 6;
 
@@ -2064,10 +2065,24 @@
 
             uiDragOffsetX = clientX - rect.left;
             uiDragOffsetY = clientY - rect.top;
+
+            // === BACA TRANSFORMASI YANG SUDAH ADA ===
+            const transform = activeUIDrag.style.transform || '';
+            let tx = 0, ty = 0;
+            if (transform && transform !== 'none') {
+                const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+                if (match) {
+                    tx = parseFloat(match[1]) || 0;
+                    ty = parseFloat(match[2]) || 0;
+                }
+            }
+            baseTransformX = tx;
+            baseTransformY = ty;
         }
 
         function onUIDragMove(e) {
             if (!activeUIDrag) return;
+
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
@@ -2079,16 +2094,25 @@
             let newX = clientX - uiDragOffsetX;
             let newY = clientY - uiDragOffsetY;
 
-            newX = Math.max(0, Math.min(window.innerWidth - activeUIDrag.offsetWidth, newX));
-            newY = Math.max(0, Math.min(window.innerHeight - activeUIDrag.offsetHeight, newY));
+            // Clamp agar tidak keluar layar
+            const maxX = window.innerWidth - activeUIDrag.offsetWidth;
+            const maxY = window.innerHeight - activeUIDrag.offsetHeight;
+            newX = Math.max(0, Math.min(maxX, newX));
+            newY = Math.max(0, Math.min(maxY, newY));
 
-            // FIX: Gunakan transform. Jangan sentuh 'position', 'left', atau 'top'.
             const deltaX = newX - uiInitialLeft;
             const deltaY = newY - uiInitialTop;
-            activeUIDrag.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+            // TOTAL = basis (sebelumnya) + perpindahan dari awal drag
+            const totalX = baseTransformX + deltaX;
+            const totalY = baseTransformY + deltaY;
+
+            activeUIDrag.style.transform = `translate(${totalX}px, ${totalY}px)`;
         }
 
-        function onUIDragEnd() { activeUIDrag = null; }
+        function onUIDragEnd() {
+            activeUIDrag = null;
+        }
 
         floatingUIs.forEach(ui => {
             ui.addEventListener('mousedown', onUIDragStart);
