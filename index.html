@@ -278,6 +278,20 @@
             border-color: #000;
         }
 
+        #game-screen.dark-theme .form-control {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        #game-screen.dark-theme .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        #game-screen.dark-theme .form-control:focus {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
         select.form-control {
             cursor: pointer;
             appearance: none;
@@ -818,6 +832,128 @@
                 margin-bottom: 20px;
             }
         }
+
+        /* --- CHAT MENU --- */
+        .chat-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            /* Bisa disesuaikan posisinya */
+            background: var(--modal-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            width: 300px;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 30;
+            overflow: hidden;
+        }
+
+        .chat-menu.active {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .chat-header {
+            padding: 12px 15px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-main);
+        }
+
+        #game-screen.dark-theme .chat-header {
+            border-bottom-color: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-messages {
+            height: 250px;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: var(--text-main);
+            background: rgba(0, 0, 0, 0.04);
+            padding: 8px 12px;
+            border-radius: 12px;
+            border-top-left-radius: 2px;
+            width: fit-content;
+            max-width: 90%;
+        }
+
+        #game-screen.dark-theme .chat-message {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-message.self {
+            align-self: flex-end;
+            border-radius: 12px;
+            border-top-right-radius: 2px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
+        #game-screen.dark-theme .chat-message.self {
+            background: rgba(96, 165, 250, 0.15);
+        }
+
+        .chat-sender {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+            color: #2563eb;
+        }
+
+        #game-screen.dark-theme .chat-sender {
+            color: #60a5fa;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            gap: 8px;
+        }
+
+        #game-screen.dark-theme .chat-input-container {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input-container input {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            border-radius: 20px;
+        }
+
+        .btn-send-chat {
+            background: #2563eb;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .btn-send-chat:hover {
+            background: #1d4ed8;
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
@@ -881,40 +1017,70 @@
             <img id="thumb-img" class="thumb-preview" src="" title="Klik untuk lihat referensi" alt="Thumbnail">
         </div>
 
-        <div class="top-right-wrapper">
-            <div class="floating-ui top-right-ui" id="drag-menu-handle">
-                <button class="hamburger-btn" id="menu-toggle-btn" title="Menu"><i
-                        class="fa-solid fa-bars"></i></button>
-            </div>
+        <div class="top-right-wrapper" style="display: flex; gap: 15px; align-items: flex-start;">
 
-            <div class="dropdown-menu" id="dropdown-menu">
-                <div class="room-badge">Room PIN: <span id="display-room-code">Offline</span></div>
-
-                <div class="dropdown-item no-hover" style="padding-bottom: 5px;">
-                    <i class="fa-solid fa-user"></i>
-                    <input type="text" id="player-name-input" class="form-control" placeholder="Nama Anda"
-                        style="padding: 8px; font-size: 0.9rem; margin-left: 5px; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: var(--text-main);">
+            <!-- BLOK TOMBOL CHAT -->
+            <div style="position: relative;">
+                <div class="floating-ui top-right-ui"
+                    style="position: relative; top: 0; right: 0; padding: 8px; z-index: 20;">
+                    <button class="hamburger-btn" id="chat-toggle-btn" title="Chat">
+                        <i class="fa-solid fa-comment-dots"></i>
+                    </button>
                 </div>
 
-                <div class="dropdown-item no-hover" id="room-lock-container" title="Cegah orang lain bergabung"
-                    style="display: none;">
-                    <i class="fa-solid fa-lock"></i> Kunci Room
-                    <label class="switch">
-                        <input type="checkbox" id="room-lock-toggle">
-                        <span class="slider"></span>
-                    </label>
+                <div class="chat-menu" id="chat-menu">
+                    <div class="chat-header">Obrolan Room</div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" class="form-control" placeholder="Ketik pesan..."
+                            autocomplete="off">
+                        <button class="btn-send-chat" id="send-chat-btn"><i
+                                class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BLOK TOMBOL MENU GARIS 3 -->
+            <div style="position: relative;">
+                <div class="floating-ui top-right-ui"
+                    style="position: relative; top: 0; right: 0; padding: 8px; z-index: 20;">
+                    <button class="hamburger-btn" id="menu-toggle-btn" title="Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
                 </div>
 
-                <button class="dropdown-item" id="dropdown-theme-btn">
-                    <i class="fa-solid fa-moon"></i> Ganti Tema
-                </button>
-                <button class="dropdown-item text-donate" id="btn-donate-game">
-                    <i class="fa-solid fa-heart"></i> Donasi
-                </button>
-                <button class="dropdown-item text-danger" id="dropdown-back-btn">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Kembali
-                </button>
+                <div class="dropdown-menu" id="dropdown-menu">
+                    <div class="room-badge">Room PIN: <span id="display-room-code">Offline</span></div>
+
+                    <div class="dropdown-item no-hover" style="padding-bottom: 5px;">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="player-name-input" class="form-control" placeholder="Nama Anda"
+                            style="padding: 8px; font-size: 0.9rem; margin-left: 5px; background: rgba(0,0,0,0.05); border: 1px solid var(--glass-border); color: var(--text-main);">
+                    </div>
+
+                    <div class="dropdown-item no-hover" id="room-lock-container" title="Cegah orang lain bergabung"
+                        style="display: none;">
+                        <i class="fa-solid fa-lock"></i> Kunci Room
+                        <label class="switch">
+                            <input type="checkbox" id="room-lock-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <button class="dropdown-item" id="dropdown-gather-btn">
+                        <i class="fa-solid fa-compress"></i> Kumpulkan Kepingan
+                    </button>
+                    <button class="dropdown-item" id="dropdown-theme-btn">
+                        <i class="fa-solid fa-moon"></i> Ganti Tema
+                    </button>
+                    <button class="dropdown-item text-donate" id="btn-donate-game">
+                        <i class="fa-solid fa-heart"></i> Donasi
+                    </button>
+                    <button class="dropdown-item text-danger" id="dropdown-back-btn">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Kembali
+                    </button>
+                </div>
             </div>
+
         </div>
 
         <canvas id="puzzle-canvas"></canvas>
@@ -937,9 +1103,17 @@
         <div class="modal-content-box" id="donation-content">
             <button class="close-btn" id="close-donation-btn"><i class="fa-solid fa-xmark"></i></button>
             <h3>Dukung Kami</h3>
-            <p>Scan QRIS di bawah ini untuk berdonasi:</p>
-            <p>Belum dibuat, kirim aja ke Dana/Gopay : 081374195580</p>
-            <img src="images/qris.jpg" alt="QRIS Donasi" class="qris-img">
+            <p>Terima kasih atas dukungannya</p>
+            <img src="images/qris.jpeg" alt="QRIS Donasi" class="qris-img">
+        </div>
+    </div>
+
+    <div id="custom-alert-modal" class="modal-overlay">
+        <div class="modal-content-box">
+            <h3 style="margin-bottom: 15px; color: var(--text-main);">Pemberitahuan</h3>
+            <p id="custom-alert-message" style="margin-bottom: 25px;">Pesan alert di sini.</p>
+            <button id="custom-alert-btn" class="btn-primary"
+                style="padding: 12px 35px; font-size: 1rem;">Mengerti</button>
         </div>
     </div>
 
@@ -1011,6 +1185,7 @@
         const displayRoomCode = document.getElementById('display-room-code');
         const dropdownThemeBtn = document.getElementById('dropdown-theme-btn');
         const dropdownBackBtn = document.getElementById('dropdown-back-btn');
+        const dropdownGatherBtn = document.getElementById('dropdown-gather-btn');
         const playerNameInput = document.getElementById('player-name-input');
         const roomLockToggle = document.getElementById('room-lock-toggle');
         const roomLockContainer = document.getElementById('room-lock-container');
@@ -1025,6 +1200,18 @@
         const btnDonateGame = document.getElementById('btn-donate-game');
         const closeDonationBtn = document.getElementById('close-donation-btn');
         const donationContent = document.getElementById('donation-content');
+
+        const customAlertModal = document.getElementById('custom-alert-modal');
+        const customAlertMessage = document.getElementById('custom-alert-message');
+        const customAlertBtn = document.getElementById('custom-alert-btn');
+
+        const chatToggleBtn = document.getElementById('chat-toggle-btn');
+        const chatMenu = document.getElementById('chat-menu');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendChatBtn = document.getElementById('send-chat-btn');
+
+        const floatingUIs = document.querySelectorAll('.top-left-ui, .top-right-wrapper > div > .floating-ui');
 
         let boardWidth, boardHeight, boardX, boardY;
         let pieces = [];
@@ -1143,6 +1330,16 @@
             }, 200);
         }
 
+        function showCustomAlert(message) {
+            customAlertMessage.textContent = message;
+            customAlertModal.style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup custom alert
+        customAlertBtn.addEventListener('click', () => {
+            customAlertModal.style.display = 'none';
+        });
+
         prevBtn.addEventListener('click', () => { currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) % puzzleImages.length; updateSelectionUI(); });
         nextBtn.addEventListener('click', () => { currentImageIndex = (currentImageIndex + 1) % puzzleImages.length; updateSelectionUI(); });
 
@@ -1172,13 +1369,27 @@
             if (inputPin !== '') {
                 db.ref(`rooms/${inputPin}`).once('value', (snap) => {
                     if (!snap.exists()) {
-                        alert("Room tidak ditemukan. Periksa kembali Kode Room.");
+                        showCustomAlert("Room tidak ditemukan. Periksa kembali Kode Room.");
                         return;
                     }
-                    if (snap.val().isLocked) {
-                        alert("Room ini telah dikunci oleh pemiliknya (Private Room).");
+
+                    const roomData = snap.val();
+
+                    if (roomData.expiresAt && Date.now() > roomData.expiresAt) {
+                        db.ref(`rooms/${inputPin}`).remove();
+                        showCustomAlert("Room telah dihapus karena kosong lebih dari 5 menit.");
                         return;
                     }
+
+                    // --- PERBAIKAN LOGIKA PRIVATE ROOM ---
+                    // Hanya tolak jika room dikunci DAN ID pemain tidak sama dengan ID owner
+                    if (roomData.isLocked && roomData.owner !== playerId) {
+                        showCustomAlert("Room ini merupakan private room");
+                        return;
+                    }
+
+                    db.ref(`rooms/${inputPin}/expiresAt`).remove();
+
                     activeRoomPin = inputPin;
                     proceedToGame();
                 });
@@ -1304,6 +1515,7 @@
                     } else {
                         roomRef.child('owner').set(playerId);
                         roomRef.child('isLocked').set(false);
+                        roomRef.child('startTime').set(Date.now());
                         let initialData = {};
                         pieces.forEach(p => {
                             initialData[p.id] = {
@@ -1313,6 +1525,17 @@
                             };
                         });
                         roomRef.child('pieces').set(initialData);
+                    }
+                });
+
+                roomRef.child('startTime').on('value', (snap) => {
+                    if (snap.exists()) {
+                        const startTime = snap.val();
+                        clearInterval(timerInterval); // Hentikan timer lokal bawaan
+                        timerInterval = setInterval(() => {
+                            secondsElapsed = Math.floor((Date.now() - startTime) / 1000);
+                            updateTimerDisplay();
+                        }, 1000);
                     }
                 });
 
@@ -1332,8 +1555,92 @@
                         needsRedraw = true;
                     }
                 });
+
+                // --- LISTENER CHAT REALTIME ---
+                roomRef.child('chat').off('child_added');
+                chatMessages.innerHTML = ''; // Bersihkan layar chat
+
+                function renderChatMessage(msg, allowNotification) {
+                    const isSelf = msg.senderId === playerId;
+
+                    const msgEl = document.createElement('div');
+                    msgEl.className = `chat-message ${isSelf ? 'self' : ''}`;
+                    msgEl.innerHTML = `
+                        <div class="chat-sender">${isSelf ? 'Anda' : msg.senderName}</div>
+                        <div class="chat-text">${msg.text}</div>
+                    `;
+
+                    chatMessages.appendChild(msgEl);
+                    chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll ke bawah
+
+                    // Notifikasi hanya untuk pesan baru (bukan riwayat lama saat pertama kali dimuat)
+                    if (allowNotification && !chatMenu.classList.contains('active') && !isSelf) {
+                        showNotification(`💬 ${msg.senderName}: ${msg.text.length > 20 ? msg.text.substring(0, 20) + '...' : msg.text}`);
+                    }
+                }
+
+                // 1. Muat riwayat chat yang sudah ada terlebih dahulu (tanpa notifikasi)
+                roomRef.child('chat').once('value', (snap) => {
+                    const loadedChatKeys = new Set();
+                    snap.forEach((child) => {
+                        loadedChatKeys.add(child.key);
+                        renderChatMessage(child.val(), false);
+                    });
+
+                    // 2. Baru setelah itu, dengarkan pesan BARU yang masuk secara realtime
+                    roomRef.child('chat').on('child_added', (snapshot) => {
+                        if (loadedChatKeys.has(snapshot.key)) return; // sudah dirender sebagai riwayat, lewati
+                        renderChatMessage(snapshot.val(), true);
+                    });
+                });
             }
         }
+
+        // Toggle Menu Chat
+        chatToggleBtn.addEventListener('click', () => {
+            if (uiHasMoved) return;
+            chatMenu.classList.toggle('active');
+            dropdownMenu.classList.remove('active'); // Tutup menu opsi jika chat dibuka
+            if (chatMenu.classList.contains('active')) {
+                chatInput.focus();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+
+        // Tutup chat saat klik menu hamburger
+        menuToggleBtn.addEventListener('click', (e) => {
+            if (uiHasMoved) return;
+            dropdownMenu.classList.toggle('active');
+            chatMenu.classList.remove('active');
+        });
+
+        // Menutup menu jika klik di luar
+        document.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('.top-right-wrapper')) {
+                dropdownMenu.classList.remove('active');
+                chatMenu.classList.remove('active');
+            }
+        });
+
+        // Fungsi kirim chat
+        function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (text !== '' && activeRoomPin && roomRef) {
+                const chatData = {
+                    senderId: playerId,
+                    senderName: savedPlayerName || 'Pemain',
+                    text: text,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+                roomRef.child('chat').push(chatData);
+                chatInput.value = '';
+            }
+        }
+
+        sendChatBtn.addEventListener('click', sendChatMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChatMessage();
+        });
 
         playerNameInput.addEventListener('input', (e) => {
             savedPlayerName = e.target.value || 'Pemain';
@@ -1367,7 +1674,13 @@
         // Hilangkan kursor dari layar saat mouse keluar jendela game
         document.addEventListener('mouseleave', () => {
             if (activeRoomPin && roomRef) {
-                roomRef.child(`cursors/${playerId}`).update({ rx: -1, ry: -1 });
+                activePieces.forEach(p => {
+                    roomRef.child(`pieces/${p.id}`).update({
+                        rx: (p.currentX - boardX) / boardWidth,
+                        ry: (p.currentY - boardY) / boardHeight,
+                        groupId: p.groupId
+                    });
+                });
             }
         });
 
@@ -1377,17 +1690,6 @@
         btnDonateGame.addEventListener('click', () => { dropdownMenu.classList.remove('active'); openDonationModal(); });
         closeDonationBtn.addEventListener('click', closeDonationModal);
         donationModal.addEventListener('click', (e) => { if (!donationContent.contains(e.target)) closeDonationModal(); });
-
-        menuToggleBtn.addEventListener('click', (e) => {
-            if (uiHasMoved) return;
-            dropdownMenu.classList.toggle('active');
-        });
-
-        document.addEventListener('mousedown', (e) => {
-            if (!e.target.closest('.top-right-wrapper')) {
-                dropdownMenu.classList.remove('active');
-            }
-        });
 
         dropdownBackBtn.addEventListener('click', () => {
             clearInterval(timerInterval);
@@ -1399,12 +1701,31 @@
             localStorage.removeItem('jigsawSaveState');
 
             if (roomRef) {
-                roomRef.child(`cursors/${playerId}`).remove();
-                roomRef = null;
+                // Cek jumlah pemain yang ada di room sebelum keluar
+                roomRef.child('cursors').once('value', (snap) => {
+                    const cursorsObj = snap.val() || {};
+                    const cursorCount = Object.keys(cursorsObj).length;
+
+                    // Jika ini adalah pemain terakhir di dalam room
+                    if (cursorCount <= 1) {
+                        // Set expiresAt ke 5 menit dari sekarang (5 m * 60 d * 1000 ms = 300000 ms)
+                        roomRef.child('expiresAt').set(Date.now() + 300000);
+                    }
+
+                    // Hapus kursor kita sendiri dari Firebase
+                    roomRef.child(`cursors/${playerId}`).remove();
+
+                    // Bersihkan state lokal
+                    roomRef = null;
+                    activeRoomPin = '';
+                    roomInput.value = '';
+                    updateSelectionUI();
+                });
+            } else {
+                activeRoomPin = '';
+                roomInput.value = '';
+                updateSelectionUI();
             }
-            activeRoomPin = '';
-            roomInput.value = '';
-            updateSelectionUI();
         });
 
         dropdownThemeBtn.addEventListener('click', () => {
@@ -1416,6 +1737,59 @@
 
         thumbImg.addEventListener('click', () => { if (!uiHasMoved) fullImageModal.style.display = 'flex'; });
         fullImageModal.addEventListener('click', () => { fullImageModal.style.display = 'none'; });
+
+        dropdownGatherBtn.addEventListener('click', () => {
+            dropdownMenu.classList.remove('active'); // Tutup menu setelah ditekan
+
+            // 1. Kelompokkan kepingan berdasarkan grup agar tidak terpisah
+            const groups = {};
+            pieces.forEach(p => {
+                if (!groups[p.groupId]) groups[p.groupId] = [];
+                groups[p.groupId].push(p);
+            });
+
+            // 2. Periksa batas setiap grup
+            Object.values(groups).forEach(group => {
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+                // Cari titik paling ujung dari sebuah grup
+                group.forEach(p => {
+                    if (p.currentX < minX) minX = p.currentX;
+                    if (p.currentY < minY) minY = p.currentY;
+                    if (p.currentX + p.pieceW > maxX) maxX = p.currentX + p.pieceW;
+                    if (p.currentY + p.pieceH > maxY) maxY = p.currentY + p.pieceH;
+                });
+
+                let shiftX = 0, shiftY = 0;
+                const padding = 30; // Jarak aman dari tepi layar
+
+                // Kalkulasi pergeseran jika melewati batas Kanan / Kiri
+                if (maxX > canvas.width) shiftX = canvas.width - maxX - padding;
+                if (minX + shiftX < 0) shiftX = -minX + padding;
+
+                // Kalkulasi pergeseran jika melewati batas Bawah / Atas
+                if (maxY > canvas.height) shiftY = canvas.height - maxY - padding;
+                if (minY + shiftY < 0) shiftY = -minY + padding;
+
+                // 3. Terapkan pergeseran ke semua kepingan dalam grup tersebut
+                if (shiftX !== 0 || shiftY !== 0) {
+                    group.forEach(p => {
+                        p.currentX += shiftX;
+                        p.currentY += shiftY;
+
+                        // Sinkronkan perpindahan ini ke Firebase untuk semua pemain
+                        if (activeRoomPin && roomRef) {
+                            roomRef.child(`pieces/${p.id}`).update({
+                                rx: (p.currentX - boardX) / boardWidth,
+                                ry: (p.currentY - boardY) / boardHeight
+                            });
+                        }
+                    });
+                }
+            });
+
+            needsRedraw = true;
+        });
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -1442,13 +1816,14 @@
             winModal.style.display = 'none';
             resizeCanvas();
             startTimer();
-            const currentData = puzzleImages[currentImageIndex];
+            const currentData = puzzleImages[currentImageIndex] || puzzleImages[0];
+
             imgObj = new Image();
-            imgObj.src = currentData.url;
             imgObj.onload = () => {
                 setupPuzzleAndScatter();
                 joinMultiplayerRoom();
             };
+            imgObj.src = currentData.url; // Selalu letakkan deklarasi src di bawah onload
         }
 
         function createPiecePath(w, h, edges) {
@@ -1569,7 +1944,13 @@
         }
 
         function onPointerDown(e) {
-            if (e.target.closest('.floating-ui') || e.target.closest('.dropdown-menu') || e.target.closest('.notification-item')) return;
+            if (e.target.closest('.floating-ui') ||
+                e.target.closest('.dropdown-menu') ||
+                e.target.closest('.chat-menu') ||
+                e.target.closest('.top-right-wrapper') ||
+                e.target.closest('.notification-item')) {
+                return; // Langsung hentikan fungsi, biarkan UI yang menangani klik ini
+            }
             if (e.cancelable) e.preventDefault();
 
             const pos = getPointerPos(e);
@@ -1589,6 +1970,8 @@
                 needsRedraw = true;
             }
         }
+
+        let lastPieceMove = 0;
 
         function onPointerMove(e) {
             if (activePieces.length === 0) return;
@@ -1611,13 +1994,20 @@
             if (maxNewY > canvas.height) shiftY = canvas.height - maxNewY;
             if (minNewY + shiftY < 0) shiftY = -minNewY;
 
+            let shouldUpdateFirebase = false;
+            const now = Date.now();
+            if (now - lastPieceMove > 40) {
+                shouldUpdateFirebase = true;
+                lastPieceMove = now;
+            }
+
             activePieces.forEach(p => {
                 const offset = dragOffsets.find(o => o.id === p.id);
                 if (offset) {
                     p.currentX = pos.x - offset.dx + shiftX;
                     p.currentY = pos.y - offset.dy + shiftY;
 
-                    if (activeRoomPin && roomRef) {
+                    if (activeRoomPin && roomRef && shouldUpdateFirebase) {
                         roomRef.child(`pieces/${p.id}`).update({
                             rx: (p.currentX - boardX) / boardWidth,
                             ry: (p.currentY - boardY) / boardHeight
@@ -1685,32 +2075,59 @@
             }
         }
 
-        const floatingUIs = document.querySelectorAll('.top-left-ui, .top-right-wrapper');
         let activeUIDrag = null, uiDragOffsetX = 0, uiDragOffsetY = 0;
+        let uiDragStartX = 0, uiDragStartY = 0;
+        const UI_DRAG_THRESHOLD = 6; // px, jarak minimum sebelum dianggap "drag" bukan "klik"
 
         function onUIDragStart(e) {
-            const uiEl = e.target.closest('.top-right-wrapper') || e.target.closest('.top-left-ui');
-            if (!uiEl || e.target.closest('.dropdown-menu')) return;
+            const uiEl = e.target.closest('.top-right-wrapper > div') || e.target.closest('.top-left-ui');
+            if (!uiEl || e.target.closest('.dropdown-menu') || e.target.closest('.chat-menu')) return;
 
-            activeUIDrag = uiEl; isUIDragging = true; uiHasMoved = false;
+            // Kunci lebar wrapper sebelum elemen ini keluar dari flex flow,
+            // agar tombol saudara (mis. tombol chat) tidak ikut bergeser mengisi slot yang kosong.
+            const wrapperEl = uiEl.closest('.top-right-wrapper');
+            if (wrapperEl && !wrapperEl.style.width) {
+                wrapperEl.style.width = `${wrapperEl.getBoundingClientRect().width}px`;
+            }
+
+            activeUIDrag = uiEl;
+            uiHasMoved = false; // reset status setiap kali interaksi baru dimulai
+
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            uiDragStartX = clientX;
+            uiDragStartY = clientY;
+
             const rect = activeUIDrag.getBoundingClientRect();
-            uiDragOffsetX = clientX - rect.left; uiDragOffsetY = clientY - rect.top;
+            uiDragOffsetX = clientX - rect.left;
+            uiDragOffsetY = clientY - rect.top;
         }
 
         function onUIDragMove(e) {
             if (!activeUIDrag) return;
-            uiHasMoved = true;
+
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            // Tandai sebagai "drag" hanya jika sudah melewati jarak ambang batas
+            if (!uiHasMoved) {
+                const movedDist = Math.hypot(clientX - uiDragStartX, clientY - uiDragStartY);
+                if (movedDist > UI_DRAG_THRESHOLD) uiHasMoved = true;
+            }
+
             let newX = clientX - uiDragOffsetX, newY = clientY - uiDragOffsetY;
+
             newX = Math.max(0, Math.min(window.innerWidth - activeUIDrag.offsetWidth, newX));
             newY = Math.max(0, Math.min(window.innerHeight - activeUIDrag.offsetHeight, newY));
-            activeUIDrag.style.left = `${newX}px`; activeUIDrag.style.top = `${newY}px`; activeUIDrag.style.right = 'auto';
+
+            activeUIDrag.style.position = 'fixed';
+            activeUIDrag.style.left = `${newX}px`;
+            activeUIDrag.style.top = `${newY}px`;
+            activeUIDrag.style.right = 'auto';
         }
 
-        function onUIDragEnd() { activeUIDrag = null; isUIDragging = false; }
+        function onUIDragEnd() { activeUIDrag = null; }
 
         floatingUIs.forEach(ui => {
             ui.addEventListener('mousedown', onUIDragStart);
@@ -1724,6 +2141,10 @@
         canvas.addEventListener('touchstart', onPointerDown, { passive: false }); window.addEventListener('touchmove', onPointerMove, { passive: false }); window.addEventListener('touchend', onPointerUp);
 
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && gameScreen.style.display === 'block') saveGameState(); });
+
+        window.addEventListener('beforeunload', () => {
+            if (gameScreen.style.display === 'block') saveGameState();
+        });
 
         const savedTheme = localStorage.getItem('jigsawDarkTheme');
         if (savedTheme === 'true') {
