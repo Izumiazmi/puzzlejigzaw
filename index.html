@@ -8,8 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js">
+    </script>
     <style>
         /* ===== CSS DASAR ===== */
         :root {
@@ -67,7 +69,6 @@
             max-width: 90%;
             white-space: nowrap;
             width: auto;
-            /* PERBAIKAN: agar tidak melebar */
         }
 
         .instagram-notification a {
@@ -147,7 +148,6 @@
         #notification-container {
             position: absolute;
             top: 80px;
-            /* PERBAIKAN: beri jarak agar tidak tertutup notif instagram */
             left: 50%;
             transform: translateX(-50%);
             z-index: 10000;
@@ -483,7 +483,6 @@
             --modal-bg: rgba(15, 23, 42, 0.92);
         }
 
-        /* FIX: Floating UI menggunakan posisi awal 0,0 agar transformasi mudah dihitung */
         .floating-ui {
             position: absolute;
             top: 0;
@@ -510,7 +509,6 @@
         .top-left-ui {
             left: 24px;
             top: 24px;
-            /* PERBAIKAN: beri jarak atas agar sejajar dengan hamburger */
             flex-direction: column;
             align-items: flex-start;
         }
@@ -551,6 +549,153 @@
 
         #game-screen.dark-theme .hamburger-btn {
             border-color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ===== COMPLETION BUTTON (GOLDEN HAMBURGER) ===== */
+        #completion-btn {
+            display: none;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-color: #f59e0b;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+            animation: glowPulse 1.5s ease-in-out infinite alternate;
+            position: relative;
+        }
+
+        #completion-btn .completion-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #ef4444;
+            color: #fff;
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 20px;
+            border: 2px solid #fff;
+            line-height: 1.2;
+        }
+
+        #game-screen.dark-theme #completion-btn .completion-badge {
+            border-color: #0b1120;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+            }
+
+            100% {
+                box-shadow: 0 0 30px rgba(245, 158, 11, 0.7);
+            }
+        }
+
+        #completion-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px rgba(245, 158, 11, 0.6);
+        }
+
+        /* ===== COMPLETION DROPDOWN ===== */
+        .completion-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: var(--modal-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            padding: 18px 20px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 220px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 30;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .completion-dropdown.active {
+            display: flex;
+        }
+
+        .completion-header {
+            text-align: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            margin-bottom: 6px;
+        }
+
+        #game-screen.dark-theme .completion-header {
+            border-bottom-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .completion-header .trophy-icon {
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .completion-header .completion-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .completion-header .completion-time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            -webkit-text-fill-color: var(--text-muted);
+        }
+
+        .completion-dropdown .dropdown-item {
+            background: transparent;
+            border: none;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .completion-dropdown .dropdown-item:hover {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        #game-screen.dark-theme .completion-dropdown .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .completion-dropdown .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .completion-dropdown .dropdown-item.text-gold {
+            color: #f59e0b;
+        }
+
+        .completion-dropdown .dropdown-item.text-gold i {
+            color: #f59e0b;
+        }
+
+        .completion-dropdown .dropdown-item.text-danger {
+            color: #ef4444;
+        }
+
+        .completion-dropdown .dropdown-item.text-danger i {
+            color: #ef4444;
         }
 
         .dropdown-menu {
@@ -768,68 +913,6 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        #win-modal {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--modal-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            padding: 50px 70px;
-            border-radius: 24px;
-            text-align: center;
-            z-index: 80;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popUp {
-            from {
-                transform: translate(-50%, -40%) scale(0.8);
-                opacity: 0;
-            }
-
-            to {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-        }
-
-        #win-modal h2 {
-            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            font-size: 3.5rem;
-            font-weight: 800;
-        }
-
-        #win-modal p {
-            margin-bottom: 35px;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        #win-modal button {
-            background: var(--text-main);
-            color: #fff;
-            border: none;
-            padding: 16px 45px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        #win-modal button:hover {
-            background: #000;
-            transform: scale(1.05);
-        }
-
         .modal-content-box {
             background: var(--modal-bg);
             padding: 40px;
@@ -1022,6 +1105,94 @@
             background: #1d4ed8;
             transform: scale(1.05);
         }
+
+        /* ===== RESPONSIVE FIX ===== */
+        @media (max-width: 700px) {
+            .top-right-wrapper {
+                gap: 8px;
+                top: 14px;
+                right: 14px;
+            }
+
+            .hamburger-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+
+            .top-left-ui {
+                left: 12px;
+                top: 12px;
+                padding: 8px;
+            }
+
+            .thumb-preview {
+                width: 100px;
+                height: 65px;
+            }
+
+            .timer {
+                font-size: 1.1rem;
+            }
+
+            .completion-dropdown {
+                min-width: 180px;
+                right: -10px;
+            }
+
+            .completion-header .completion-title {
+                font-size: 1rem;
+            }
+
+            .completion-header .trophy-icon {
+                font-size: 1.6rem;
+            }
+
+            .dropdown-menu {
+                min-width: 200px;
+                right: -10px;
+            }
+
+            .chat-menu {
+                width: 260px;
+                right: -10px;
+            }
+
+            .chat-messages {
+                height: 180px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .top-right-wrapper {
+                gap: 5px;
+                top: 10px;
+                right: 10px;
+            }
+
+            .hamburger-btn {
+                width: 34px;
+                height: 34px;
+                font-size: 0.9rem;
+                border-width: 1.5px;
+            }
+
+            .top-left-ui {
+                left: 8px;
+                top: 8px;
+                padding: 6px;
+                gap: 8px;
+            }
+
+            .thumb-preview {
+                width: 70px;
+                height: 46px;
+            }
+
+            .timer {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 
@@ -1079,12 +1250,17 @@
     <!-- LAYAR PERMAINAN -->
     <div id="game-screen">
         <div id="notification-container"></div>
+
+        <!-- TOP-LEFT UI -->
         <div class="floating-ui top-left-ui">
             <div class="timer" id="timer">00:00</div>
             <img id="thumb-img" class="thumb-preview" src="" title="Klik untuk lihat referensi" alt="Thumbnail">
         </div>
+
+        <!-- TOP-RIGHT WRAPPER -->
         <div class="top-right-wrapper">
-            <!-- Chat -->
+
+            <!-- CHAT -->
             <div style="position: relative;">
                 <div class="floating-ui top-right-ui">
                     <button class="hamburger-btn" id="chat-toggle-btn" title="Chat"><i
@@ -1101,7 +1277,32 @@
                     </div>
                 </div>
             </div>
-            <!-- Menu -->
+
+            <!-- COMPLETION BUTTON (muncul saat puzzle selesai) -->
+            <div style="position: relative;">
+                <div class="floating-ui top-right-ui"
+                    style="padding:8px; border-radius:14px; background:transparent; backdrop-filter:none; border:none; box-shadow:none;">
+                    <button class="hamburger-btn" id="completion-btn" title="Puzzle Selesai!">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span class="completion-badge">✓</span>
+                    </button>
+                </div>
+                <div class="completion-dropdown" id="completion-dropdown">
+                    <div class="completion-header">
+                        <span class="trophy-icon">🏆</span>
+                        <div class="completion-title">Luar Biasa!</div>
+                        <div class="completion-time" id="completion-time-display">Waktu: 00:00</div>
+                    </div>
+                    <button class="dropdown-item text-gold" id="completion-retry-btn">
+                        <i class="fa-solid fa-rotate-right"></i> Coba Lagi
+                    </button>
+                    <button class="dropdown-item text-danger" id="completion-exit-btn">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
+                    </button>
+                </div>
+            </div>
+
+            <!-- MENU UTAMA -->
             <div style="position: relative;">
                 <div class="floating-ui top-right-ui">
                     <button class="hamburger-btn" id="menu-toggle-btn" title="Menu"><i
@@ -1133,38 +1334,35 @@
                 </div>
             </div>
         </div>
+
         <canvas id="puzzle-canvas"></canvas>
-        <!-- MODAL KEMENANGAN -->
-        <div id="win-modal">
-            <h2>Luar Biasa!</h2>
-            <p id="win-time">Waktu penyelesaian: 00:00</p>
-            <button id="win-exit-btn">Kembali ke Menu</button>
-        </div>
-    </div>
 
-    <!-- MODAL FULL IMAGE -->
-    <div id="full-image-modal" class="modal-overlay">
-        <img id="full-preview-img" src="" alt="Full Reference">
-        <div class="close-modal-hint">Klik di mana saja untuk kembali bermain</div>
-    </div>
-
-    <!-- MODAL DONASI -->
-    <div id="donation-modal" class="modal-overlay">
-        <div class="modal-content-box" id="donation-content">
-            <button class="close-btn" id="close-donation-btn"><i class="fa-solid fa-xmark"></i></button>
-            <h3>Dukung Kami</h3>
-            <p>Terima kasih atas dukungannya</p>
-            <img src="images/qris.jpeg" alt="QRIS Donasi" class="qris-img">
+        <!-- MODAL FULL IMAGE -->
+        <div id="full-image-modal" class="modal-overlay">
+            <img id="full-preview-img" src="" alt="Full Reference">
+            <div class="close-modal-hint">Klik di mana saja untuk kembali bermain</div>
         </div>
-    </div>
 
-    <div id="custom-alert-modal" class="modal-overlay">
-        <div class="modal-content-box">
-            <h3 style="margin-bottom:15px; color:var(--text-main);">Pemberitahuan</h3>
-            <p id="custom-alert-message" style="margin-bottom:25px;">Pesan alert di sini.</p>
-            <button id="custom-alert-btn" class="btn-primary"
-                style="padding:12px 35px; font-size:1rem;">Mengerti</button>
+        <!-- MODAL DONASI -->
+        <div id="donation-modal" class="modal-overlay">
+            <div class="modal-content-box" id="donation-content">
+                <button class="close-btn" id="close-donation-btn"><i class="fa-solid fa-xmark"></i></button>
+                <h3>Dukung Kami</h3>
+                <p>Terima kasih atas dukungannya</p>
+                <img src="images/qris.jpeg" alt="QRIS Donasi" class="qris-img">
+            </div>
         </div>
+
+        <!-- CUSTOM ALERT -->
+        <div id="custom-alert-modal" class="modal-overlay">
+            <div class="modal-content-box">
+                <h3 style="margin-bottom:15px; color:var(--text-main);">Pemberitahuan</h3>
+                <p id="custom-alert-message" style="margin-bottom:25px;">Pesan alert di sini.</p>
+                <button id="custom-alert-btn" class="btn-primary"
+                    style="padding:12px 35px; font-size:1rem;">Mengerti</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -1173,7 +1371,7 @@
             const notif = document.getElementById('instagram-notification');
             const closeBtn = document.getElementById('close-instagram-btn');
             const STORAGE_KEY = 'instagram_notif_closed_time';
-            const INTERVAL_MS = 30 * 60 * 1000; // 30 menit
+            const INTERVAL_MS = 30 * 60 * 1000;
 
             function shouldShow() {
                 const closedTime = localStorage.getItem(STORAGE_KEY);
@@ -1229,7 +1427,8 @@
             if (!container) return;
             const notif = document.createElement('div');
             notif.className = 'notification-item';
-            notif.innerHTML = `<span>${msg}</span><button class="close-notif"><i class="fa-solid fa-xmark"></i></button>`;
+            notif.innerHTML =
+                `<span>${msg}</span><button class="close-notif"><i class="fa-solid fa-xmark"></i></button>`;
             container.appendChild(notif);
             notif.querySelector('.close-notif').onclick = () => notif.remove();
             setTimeout(() => { if (notif.parentNode) notif.remove(); }, 4000);
@@ -1273,9 +1472,6 @@
         const playerNameInput = document.getElementById('player-name-input');
         const roomLockToggle = document.getElementById('room-lock-toggle');
         const roomLockContainer = document.getElementById('room-lock-container');
-        const winModal = document.getElementById('win-modal');
-        const winTime = document.getElementById('win-time');
-        const winExitBtn = document.getElementById('win-exit-btn');
         const fullImageModal = document.getElementById('full-image-modal');
         const fullPreviewImg = document.getElementById('full-preview-img');
         const donationModal = document.getElementById('donation-modal');
@@ -1293,6 +1489,13 @@
         const sendChatBtn = document.getElementById('send-chat-btn');
         const floatingUIs = document.querySelectorAll('.top-left-ui, .top-right-wrapper > div > .floating-ui');
 
+        // ===== COMPLETION BUTTON DOM =====
+        const completionBtn = document.getElementById('completion-btn');
+        const completionDropdown = document.getElementById('completion-dropdown');
+        const completionTimeDisplay = document.getElementById('completion-time-display');
+        const completionRetryBtn = document.getElementById('completion-retry-btn');
+        const completionExitBtn = document.getElementById('completion-exit-btn');
+
         // ===================== STATE =====================
         let boardWidth, boardHeight, boardX, boardY;
         let pieces = [];
@@ -1305,6 +1508,7 @@
         let isInitialPiecesLoad = true;
         let gameOverListener = null;
         let isGameOver = false;
+        let winTimeText = '00:00';
 
         // ===================== SAVE / LOAD STATE =====================
         function saveGameState() {
@@ -1315,9 +1519,15 @@
                 pieceCount,
                 activeRoomPin,
                 secondsElapsed,
-                boardWidth, boardHeight, boardX, boardY,
+                boardWidth,
+                boardHeight,
+                boardX,
+                boardY,
                 piecesData: pieces.map(p => ({
-                    id: p.id, groupId: p.groupId, r: p.r, c: p.c,
+                    id: p.id,
+                    groupId: p.groupId,
+                    r: p.r,
+                    c: p.c,
                     rx: (p.currentX - boardX) / boardWidth,
                     ry: (p.currentY - boardY) / boardHeight,
                     edges: p.edges
@@ -1361,30 +1571,56 @@
                 imgObj.src = currentData.url;
                 imgObj.onload = () => {
                     let cols, rows;
-                    if (pieceCount === 100) { cols = 10; rows = 10; }
-                    else if (pieceCount === 200) { cols = 16; rows = 12; }
-                    else if (pieceCount === 300) { cols = 20; rows = 15; }
+                    if (pieceCount === 100) {
+                        cols = 10;
+                        rows = 10;
+                    } else if (pieceCount === 200) {
+                        cols = 16;
+                        rows = 12;
+                    } else if (pieceCount === 300) {
+                        cols = 20;
+                        rows = 15;
+                    }
                     const paddingHorizontal = canvas.width * 0.15;
                     const maxBoardW = canvas.width - paddingHorizontal;
                     const maxBoardH = canvas.height * 0.65;
                     const imgAspect = imgObj.width / imgObj.height;
-                    if (maxBoardW / maxBoardH > imgAspect) { boardHeight = maxBoardH; boardWidth = maxBoardH * imgAspect; }
-                    else { boardWidth = maxBoardW; boardHeight = maxBoardW / imgAspect; }
+                    if (maxBoardW / maxBoardH > imgAspect) {
+                        boardHeight = maxBoardH;
+                        boardWidth = maxBoardH * imgAspect;
+                    } else {
+                        boardWidth = maxBoardW;
+                        boardHeight = maxBoardW / imgAspect;
+                    }
                     boardX = (canvas.width - boardWidth) / 2;
                     boardY = ((canvas.height - boardHeight) / 2) + 20;
                     const pieceW = boardWidth / cols;
                     const pieceH = boardHeight / rows;
                     pieces = state.piecesData.map(pData => {
                         const path = createPiecePath(pieceW, pieceH, pData.edges);
-                        let currX = pData.rx !== undefined ? boardX + (pData.rx * boardWidth) : (pData.currentX || 0);
-                        let currY = pData.ry !== undefined ? boardY + (pData.ry * boardHeight) : (pData.currentY || 0);
+                        let currX = pData.rx !== undefined ? boardX + (pData.rx * boardWidth) : (pData
+                            .currentX || 0);
+                        let currY = pData.ry !== undefined ? boardY + (pData.ry * boardHeight) : (pData
+                            .currentY || 0);
                         return {
-                            id: pData.id, groupId: pData.groupId, r: pData.r, c: pData.c, pieceW, pieceH,
-                            currentX: currX, currentY: currY, edges: pData.edges, path
+                            id: pData.id,
+                            groupId: pData.groupId,
+                            r: pData.r,
+                            c: pData.c,
+                            pieceW,
+                            pieceH,
+                            currentX: currX,
+                            currentY: currY,
+                            edges: pData.edges,
+                            path
                         };
                     });
-                    activePieces = []; dragOffsets = []; needsRedraw = true;
+                    activePieces = [];
+                    dragOffsets = [];
+                    needsRedraw = true;
                     if (activeRoomPin) joinMultiplayerRoom();
+                    // sembunyikan completion button saat load
+                    hideCompletionUI();
                 };
                 return true;
             } catch (e) { return false; }
@@ -1407,8 +1643,15 @@
         }
         customAlertBtn.addEventListener('click', () => { customAlertModal.style.display = 'none'; });
 
-        prevBtn.addEventListener('click', () => { currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) % puzzleImages.length; updateSelectionUI(); });
-        nextBtn.addEventListener('click', () => { currentImageIndex = (currentImageIndex + 1) % puzzleImages.length; updateSelectionUI(); });
+        prevBtn.addEventListener('click', () => {
+            currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) %
+            puzzleImages.length;
+            updateSelectionUI();
+        });
+        nextBtn.addEventListener('click', () => {
+            currentImageIndex = (currentImageIndex + 1) % puzzleImages.length;
+            updateSelectionUI();
+        });
 
         uploadInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -1434,7 +1677,10 @@
             const inputPin = roomInput.value.trim().toUpperCase();
             if (inputPin !== '') {
                 db.ref(`rooms/${inputPin}`).once('value', (snap) => {
-                    if (!snap.exists()) { showCustomAlert("Room tidak ditemukan. Periksa kembali Kode Room."); return; }
+                    if (!snap.exists()) {
+                        showCustomAlert(
+                            "Room tidak ditemukan. Periksa kembali Kode Room."); return;
+                    }
                     const roomData = snap.val();
                     if (roomData.expiresAt && Date.now() > roomData.expiresAt) {
                         db.ref(`rooms/${inputPin}`).remove();
@@ -1459,7 +1705,118 @@
             displayRoomCode.textContent = activeRoomPin;
             selectionScreen.style.display = 'none';
             gameScreen.style.display = 'block';
+            // sembunyikan completion button di awal
+            hideCompletionUI();
             initGame();
+        }
+
+        // ===================== COMPLETION UI =====================
+        function showCompletionUI(timeStr) {
+            completionTimeDisplay.textContent = `Waktu: ${timeStr || timerEl.textContent}`;
+            completionBtn.style.display = 'flex';
+            completionBtn.style.animation = 'glowPulse 1.5s ease-in-out infinite alternate';
+            // sembunyikan dropdown saat tombol muncul
+            completionDropdown.classList.remove('active');
+        }
+
+        function hideCompletionUI() {
+            completionBtn.style.display = 'none';
+            completionBtn.style.animation = 'none';
+            completionDropdown.classList.remove('active');
+        }
+
+        function toggleCompletionDropdown(e) {
+            e.stopPropagation();
+            completionDropdown.classList.toggle('active');
+            // tutup menu lain
+            dropdownMenu.classList.remove('active');
+            chatMenu.classList.remove('active');
+        }
+
+        // klik tombol completion
+        completionBtn.addEventListener('click', toggleCompletionDropdown);
+
+        // klik di luar untuk tutup dropdown completion
+        document.addEventListener('mousedown', (e) => {
+            if (!e.target.closest('#completion-btn') && !e.target.closest('.completion-dropdown')) {
+                completionDropdown.classList.remove('active');
+            }
+        });
+
+        // ===== COBA LAGI =====
+        completionRetryBtn.addEventListener('click', () => {
+            completionDropdown.classList.remove('active');
+            resetPuzzle();
+        });
+
+        // ===== KELUAR =====
+        completionExitBtn.addEventListener('click', () => {
+            completionDropdown.classList.remove('active');
+            exitGame('Anda keluar dari permainan.');
+        });
+
+        // ===================== RESET PUZZLE (COBA LAGI) =====================
+        function resetPuzzle() {
+            if (pieces.length === 0) return;
+
+            // Reset timer
+            clearInterval(timerInterval);
+            secondsElapsed = 0;
+            updateTimerDisplay();
+
+            // Shuffle semua pieces: setiap piece jadi group sendiri, posisi acak
+            const cols = Math.round(Math.sqrt(pieceCount));
+            const rows = Math.ceil(pieceCount / cols);
+            const pieceW = boardWidth / cols;
+            const pieceH = boardHeight / rows;
+
+            pieces.forEach(p => {
+                // reset groupId ke id sendiri
+                p.groupId = p.id;
+                // posisi acak di area kanvas
+                const margin = 30;
+                const maxX = canvas.width - pieceW - margin;
+                const maxY = canvas.height - pieceH - margin;
+                p.currentX = margin + Math.random() * (maxX - margin);
+                p.currentY = 100 + Math.random() * (maxY - 100);
+                // update path (ukuran bisa berubah jika jumlah piece berubah)
+                p.pieceW = pieceW;
+                p.pieceH = pieceH;
+                p.path = createPiecePath(pieceW, pieceH, p.edges);
+            });
+
+            // acak urutan pieces
+            pieces.sort(() => Math.random() - 0.5);
+
+            isGameOver = false;
+            hideCompletionUI();
+            needsRedraw = true;
+            saveGameState();
+
+            // Update Firebase jika multiplayer
+            if (activeRoomPin && roomRef) {
+                // reset startTime
+                roomRef.child('startTime').set(Date.now());
+                // set gameOver ke false
+                roomRef.child('gameOver').set(false);
+                // update semua pieces
+                const updates = {};
+                pieces.forEach(p => {
+                    updates[`pieces/${p.id}`] = {
+                        rx: (p.currentX - boardX) / boardWidth,
+                        ry: (p.currentY - boardY) / boardHeight,
+                        groupId: p.groupId
+                    };
+                });
+                roomRef.update(updates);
+                showNotification('🔄 Puzzle di-reset!');
+            } else {
+                startTimer(0);
+                showNotification('🔄 Puzzle di-reset!');
+            }
+
+            // Reset timer display di UI
+            timerEl.textContent = '00:00';
         }
 
         // ===================== MULTIPLAYER =====================
@@ -1542,7 +1899,8 @@
                                 p.currentX = boardX + (fbPieces[p.id].rx * boardWidth);
                                 p.currentY = boardY + (fbPieces[p.id].ry * boardHeight);
                             }
-                            p.groupId = fbPieces[p.id].groupId !== undefined ? fbPieces[p.id].groupId : p.groupId;
+                            p.groupId = fbPieces[p.id].groupId !== undefined ? fbPieces[p.id].groupId : p
+                                .groupId;
                         }
                     });
                     needsRedraw = true;
@@ -1607,17 +1965,23 @@
             if (gameOverListener) gameOverListener.off();
             gameOverListener = roomRef.child('gameOver');
             gameOverListener.on('value', (snap) => {
-                if (snap.val() === true && !isGameOver) {
+                const val = snap.val();
+                if (val === true && !isGameOver) {
                     isGameOver = true;
-                    winTime.textContent = `Waktu penyelesaian: ${timerEl.textContent}`;
-                    winModal.style.display = 'block';
+                    winTimeText = timerEl.textContent;
+                    // tampilkan completion button (bukan modal)
+                    showCompletionUI(winTimeText);
                     clearInterval(timerInterval);
+                    showNotification('🎉 Puzzle selesai! Klik trophy di kanan atas.');
+                } else if (val === false) {
+                    isGameOver = false;
+                    hideCompletionUI();
                 }
             });
 
             roomRef.child('chat').off('child_added');
             chatMessages.innerHTML = '';
-            function renderChatMessage(msg, allowNotification) {
+            renderChatMessage = function (msg, allowNotification) {
                 const isSelf = msg.senderId === playerId;
                 const msgEl = document.createElement('div');
                 msgEl.className = `chat-message ${isSelf ? 'self' : ''}`;
@@ -1628,9 +1992,12 @@
                 chatMessages.appendChild(msgEl);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 if (allowNotification && !chatMenu.classList.contains('active') && !isSelf) {
-                    showNotification(`💬 ${msg.senderName}: ${msg.text.length > 20 ? msg.text.substring(0, 20) + '...' : msg.text}`);
+                    showNotification(
+                        `💬 ${msg.senderName}: ${msg.text.length > 20 ? msg.text.substring(0, 20) + '...' : msg.text}`
+                    );
                 }
-            }
+            };
+            let renderChatMessage;
             roomRef.child('chat').once('value', (snap) => {
                 const loadedChatKeys = new Set();
                 snap.forEach((child) => {
@@ -1656,9 +2023,10 @@
             clearInterval(timerInterval);
             gameScreen.style.display = 'none';
             selectionScreen.style.display = 'flex';
-            winModal.style.display = 'none';
+            hideCompletionUI();
             dropdownMenu.classList.remove('active');
             chatMenu.classList.remove('active');
+            completionDropdown.classList.remove('active');
             localStorage.removeItem('jigsawSaveState');
 
             floatingUIs.forEach(ui => {
@@ -1688,15 +2056,12 @@
             exitGame('Anda keluar dari permainan.');
         });
 
-        winExitBtn.addEventListener('click', () => {
-            exitGame('Permainan selesai. Kembali ke menu.');
-        });
-
         // ===================== UI EVENTS =====================
         chatToggleBtn.addEventListener('click', () => {
             if (uiHasMoved) return;
             chatMenu.classList.toggle('active');
             dropdownMenu.classList.remove('active');
+            completionDropdown.classList.remove('active');
             if (chatMenu.classList.contains('active')) {
                 chatInput.focus();
                 chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -1707,12 +2072,14 @@
             if (uiHasMoved) return;
             dropdownMenu.classList.toggle('active');
             chatMenu.classList.remove('active');
+            completionDropdown.classList.remove('active');
         });
 
         document.addEventListener('mousedown', (e) => {
             if (!e.target.closest('.top-right-wrapper')) {
                 dropdownMenu.classList.remove('active');
                 chatMenu.classList.remove('active');
+                completionDropdown.classList.remove('active');
             }
         });
 
@@ -1776,16 +2143,21 @@
 
         // ===================== DONASI =====================
         function openDonationModal() { donationModal.style.display = 'flex'; }
+
         function closeDonationModal() { donationModal.style.display = 'none'; }
         btnDonateMenu.addEventListener('click', openDonationModal);
-        btnDonateGame.addEventListener('click', () => { dropdownMenu.classList.remove('active'); openDonationModal(); });
+        btnDonateGame.addEventListener('click', () => {
+            dropdownMenu.classList.remove('active');
+            openDonationModal();
+        });
         closeDonationBtn.addEventListener('click', closeDonationModal);
         donationModal.addEventListener('click', (e) => { if (!donationContent.contains(e.target)) closeDonationModal(); });
 
         // ===================== THEME =====================
         dropdownThemeBtn.addEventListener('click', () => {
             const isDark = gameScreen.classList.toggle('dark-theme');
-            dropdownThemeBtn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i> Tema Terang' : '<i class="fa-solid fa-moon"></i> Tema Gelap';
+            dropdownThemeBtn.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i> Tema Terang' :
+                '<i class="fa-solid fa-moon"></i> Tema Gelap';
             localStorage.setItem('jigsawDarkTheme', isDark);
             needsRedraw = true;
         });
@@ -1803,14 +2175,18 @@
                 groups[p.groupId].push(p);
             });
             Object.values(groups).forEach(group => {
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                let minX = Infinity,
+                    minY = Infinity,
+                    maxX = -Infinity,
+                    maxY = -Infinity;
                 group.forEach(p => {
                     if (p.currentX < minX) minX = p.currentX;
                     if (p.currentY < minY) minY = p.currentY;
                     if (p.currentX + p.pieceW > maxX) maxX = p.currentX + p.pieceW;
                     if (p.currentY + p.pieceH > maxY) maxY = p.currentY + p.pieceH;
                 });
-                let shiftX = 0, shiftY = 0;
+                let shiftX = 0,
+                    shiftY = 0;
                 const padding = 30;
                 if (maxX > canvas.width) shiftX = canvas.width - maxX - padding;
                 if (minX + shiftX < 0) shiftX = -minX + padding;
@@ -1846,7 +2222,10 @@
             clearInterval(timerInterval);
             secondsElapsed = initialSeconds;
             updateTimerDisplay();
-            timerInterval = setInterval(() => { secondsElapsed++; updateTimerDisplay(); }, 1000);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                updateTimerDisplay();
+            }, 1000);
         }
 
         function updateTimerDisplay() {
@@ -1857,8 +2236,8 @@
 
         // ===================== INIT GAME =====================
         function initGame() {
-            winModal.style.display = 'none';
             isGameOver = false;
+            hideCompletionUI();
             resizeCanvas();
             startTimer();
 
@@ -1907,18 +2286,25 @@
 
         function drawJigsawEdgePath(path, x1, y1, x2, y2, tabDir, tabSize) {
             if (tabDir === 0) { path.lineTo(x2, y2); return; }
-            const dx = x2 - x1, dy = y2 - y1;
+            const dx = x2 - x1,
+                dy = y2 - y1;
             const dist = Math.hypot(dx, dy);
             const angle = Math.atan2(dy, dx);
-            const nx = -Math.sin(angle) * tabDir, ny = Math.cos(angle) * tabDir;
-            const ux = Math.cos(angle), uy = Math.sin(angle);
-            const cp1x = x1 + ux * dist * 0.38, cp1y = y1 + uy * dist * 0.38;
-            const cp2x = x1 + ux * dist * 0.62, cp2y = y1 + uy * dist * 0.62;
+            const nx = -Math.sin(angle) * tabDir,
+                ny = Math.cos(angle) * tabDir;
+            const ux = Math.cos(angle),
+                uy = Math.sin(angle);
+            const cp1x = x1 + ux * dist * 0.38,
+                cp1y = y1 + uy * dist * 0.38;
+            const cp2x = x1 + ux * dist * 0.62,
+                cp2y = y1 + uy * dist * 0.62;
             const tabCenterX = x1 + ux * dist * 0.5 + nx * tabSize;
             const tabCenterY = y1 + uy * dist * 0.5 + ny * tabSize;
             path.lineTo(cp1x, cp1y);
-            path.bezierCurveTo(cp1x + nx * tabSize * 0.8, cp1y + ny * tabSize * 0.8, tabCenterX - ux * tabSize * 0.6, tabCenterY, tabCenterX, tabCenterY);
-            path.bezierCurveTo(tabCenterX + ux * tabSize * 0.6, tabCenterY, cp2x + nx * tabSize * 0.8, cp2y + ny * tabSize * 0.8, cp2x, cp2y);
+            path.bezierCurveTo(cp1x + nx * tabSize * 0.8, cp1y + ny * tabSize * 0.8, tabCenterX - ux * tabSize * 0.6,
+                tabCenterY, tabCenterX, tabCenterY);
+            path.bezierCurveTo(tabCenterX + ux * tabSize * 0.6, tabCenterY, cp2x + nx * tabSize * 0.8, cp2y + ny *
+                tabSize * 0.8, cp2x, cp2y);
             path.lineTo(x2, y2);
         }
 
@@ -1927,23 +2313,37 @@
             activePieces = [];
             dragOffsets = [];
             let cols, rows;
-            if (pieceCount === 100) { cols = 10; rows = 10; }
-            else if (pieceCount === 200) { cols = 16; rows = 12; }
-            else if (pieceCount === 300) { cols = 20; rows = 15; }
+            if (pieceCount === 100) {
+                cols = 10;
+                rows = 10;
+            } else if (pieceCount === 200) {
+                cols = 16;
+                rows = 12;
+            } else if (pieceCount === 300) {
+                cols = 20;
+                rows = 15;
+            }
 
             const paddingHorizontal = canvas.width * 0.15;
             const maxBoardW = canvas.width - paddingHorizontal;
             const maxBoardH = canvas.height * 0.65;
             const imgAspect = imgObj.width / imgObj.height;
-            if (maxBoardW / maxBoardH > imgAspect) { boardHeight = maxBoardH; boardWidth = maxBoardH * imgAspect; }
-            else { boardWidth = maxBoardW; boardHeight = maxBoardW / imgAspect; }
+            if (maxBoardW / maxBoardH > imgAspect) {
+                boardHeight = maxBoardH;
+                boardWidth = maxBoardH * imgAspect;
+            } else {
+                boardWidth = maxBoardW;
+                boardHeight = maxBoardW / imgAspect;
+            }
             boardX = (canvas.width - boardWidth) / 2;
             boardY = ((canvas.height - boardHeight) / 2) + 20;
             const pieceW = boardWidth / cols;
             const pieceH = boardHeight / rows;
 
-            const verticalEdges = Array.from({ length: rows }, () => Array(cols - 1).fill(0).map(() => Math.random() < 0.5 ? 1 : -1));
-            const horizontalEdges = Array.from({ length: rows - 1 }, () => Array(cols).fill(0).map(() => Math.random() < 0.5 ? 1 : -1));
+            const verticalEdges = Array.from({ length: rows }, () => Array(cols - 1).fill(0).map(() => Math.random() < 0.5 ?
+                1 : -1));
+            const horizontalEdges = Array.from({ length: rows - 1 }, () => Array(cols).fill(0).map(() => Math.random() < 0.5 ?
+                1 : -1));
 
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
@@ -1957,8 +2357,16 @@
                     const randomY = Math.max(150, Math.random() * (canvas.height - pieceH));
                     const pId = r * cols + c;
                     pieces.push({
-                        id: pId, groupId: pId, r, c, pieceW, pieceH,
-                        currentX: randomX, currentY: randomY, edges, path: createPiecePath(pieceW, pieceH, edges)
+                        id: pId,
+                        groupId: pId,
+                        r,
+                        c,
+                        pieceW,
+                        pieceH,
+                        currentX: randomX,
+                        currentY: randomY,
+                        edges,
+                        path: createPiecePath(pieceW, pieceH, edges)
                     });
                 }
             }
@@ -2020,7 +2428,9 @@
                 e.target.closest('.dropdown-menu') ||
                 e.target.closest('.chat-menu') ||
                 e.target.closest('.top-right-wrapper') ||
-                e.target.closest('.notification-item')) {
+                e.target.closest('.notification-item') ||
+                e.target.closest('#completion-btn') ||
+                e.target.closest('.completion-dropdown')) {
                 return;
             }
             if (e.cancelable) e.preventDefault();
@@ -2046,18 +2456,23 @@
         function onPointerMove(e) {
             if (activePieces.length === 0 || isGameOver) return;
             const pos = getPointerPos(e);
-            let minNewX = Infinity, minNewY = Infinity, maxNewX = -Infinity, maxNewY = -Infinity;
+            let minNewX = Infinity,
+                minNewY = Infinity,
+                maxNewX = -Infinity,
+                maxNewY = -Infinity;
             activePieces.forEach(p => {
                 const offset = dragOffsets.find(o => o.id === p.id);
                 if (offset) {
-                    let nx = pos.x - offset.dx, ny = pos.y - offset.dy;
+                    let nx = pos.x - offset.dx,
+                        ny = pos.y - offset.dy;
                     if (nx < minNewX) minNewX = nx;
                     if (ny < minNewY) minNewY = ny;
                     if (nx + p.pieceW > maxNewX) maxNewX = nx + p.pieceW;
                     if (ny + p.pieceH > maxNewY) maxNewY = ny + p.pieceH;
                 }
             });
-            let shiftX = 0, shiftY = 0;
+            let shiftX = 0,
+                shiftY = 0;
             if (maxNewX > canvas.width) shiftX = canvas.width - maxNewX;
             if (minNewX + shiftX < 0) shiftX = -minNewX;
             if (maxNewY > canvas.height) shiftY = canvas.height - maxNewY;
@@ -2091,13 +2506,15 @@
             if (!isGameOver && pieces.length > 0) {
                 const firstGroupId = pieces[0].groupId;
                 if (pieces.every(p => p.groupId === firstGroupId)) {
+                    isGameOver = true;
+                    winTimeText = timerEl.textContent;
                     if (activeRoomPin && roomRef) {
                         roomRef.child('gameOver').set(true);
                     } else {
-                        isGameOver = true;
-                        winTime.textContent = `Waktu penyelesaian: ${timerEl.textContent}`;
-                        winModal.style.display = 'block';
+                        // Single player: tampilkan completion button
+                        showCompletionUI(winTimeText);
                         clearInterval(timerInterval);
+                        showNotification('🎉 Puzzle selesai! Klik trophy di kanan atas.');
                     }
                 }
             }
@@ -2107,7 +2524,8 @@
             if (activePieces.length === 0 || isGameOver) return;
             const snapTolerance = 25;
             let snapped = false;
-            let shiftX = 0, shiftY = 0;
+            let shiftX = 0,
+                shiftY = 0;
             let targetGroupId = null;
             let draggedGroupId = activePieces[0].groupId;
 
@@ -2115,7 +2533,8 @@
                 if (snapped) break;
                 for (let pB of pieces) {
                     if (pA.groupId === pB.groupId) continue;
-                    const isNeighbor = (Math.abs(pA.r - pB.r) === 1 && pA.c === pB.c) || (Math.abs(pA.c - pB.c) === 1 && pA.r === pB.r);
+                    const isNeighbor = (Math.abs(pA.r - pB.r) === 1 && pA.c === pB.c) || (Math.abs(pA.c - pB.c) ===
+                        1 && pA.r === pB.r);
                     if (!isNeighbor) continue;
                     const expectedDx = (pA.c - pB.c) * pA.pieceW;
                     const expectedDy = (pA.r - pB.r) * pA.pieceH;
@@ -2166,7 +2585,7 @@
             checkWin();
         }
 
-        // ===================== CONTEXT MENU (Klik Kanan) =====================
+        // ===================== CONTEXT MENU =====================
         canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             if (isGameOver) return;
@@ -2203,17 +2622,22 @@
             }
         });
 
-        // ===================== DRAGGABLE UI (FIXED dengan transform) =====================
-        let activeUIDrag = null, uiDragOffsetX = 0, uiDragOffsetY = 0;
-        let uiDragStartX = 0, uiDragStartY = 0;
-        let uiInitialLeft = 0, uiInitialTop = 0;
-        let baseTransformX = 0, baseTransformY = 0;
-
+        // ===================== DRAGGABLE UI =====================
+        let activeUIDrag = null,
+            uiDragOffsetX = 0,
+            uiDragOffsetY = 0;
+        let uiDragStartX = 0,
+            uiDragStartY = 0;
+        let uiInitialLeft = 0,
+            uiInitialTop = 0;
+        let baseTransformX = 0,
+            baseTransformY = 0;
         const UI_DRAG_THRESHOLD = 6;
 
         function onUIDragStart(e) {
             const uiEl = e.target.closest('.top-right-wrapper > div') || e.target.closest('.top-left-ui');
-            if (!uiEl || e.target.closest('.dropdown-menu') || e.target.closest('.chat-menu')) return;
+            if (!uiEl || e.target.closest('.dropdown-menu') || e.target.closest('.chat-menu') || e.target.closest(
+                '.completion-dropdown')) return;
 
             activeUIDrag = uiEl;
             uiHasMoved = false;
@@ -2231,7 +2655,8 @@
             uiDragOffsetY = clientY - rect.top;
 
             const transform = activeUIDrag.style.transform || '';
-            let tx = 0, ty = 0;
+            let tx = 0,
+                ty = 0;
             if (transform && transform !== 'none') {
                 const match = transform.match(/translate\(([^,]+),\s*([^)]+)\)/);
                 if (match) {
