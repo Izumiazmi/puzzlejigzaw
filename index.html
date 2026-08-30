@@ -45,6 +45,139 @@
             height: 100vh;
         }
 
+        /* ===== GLOBAL NOTIFICATION CONTAINER (di luar game) ===== */
+        #global-notification-container {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10001;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+            width: auto;
+            max-width: 90%;
+        }
+
+        .global-notification-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+        }
+
+        .global-notification-item .close-notif {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .global-notification-item .close-notif:hover {
+            color: var(--text-danger);
+        }
+
+        /* ===== GLOBAL CUSTOM ALERT (di luar game) ===== */
+        #global-alert-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #global-alert-overlay .modal-content-box {
+            background: var(--modal-bg);
+            padding: 40px;
+            border-radius: 24px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            max-width: 400px;
+            width: 90%;
+            cursor: default;
+        }
+
+        #global-alert-overlay .modal-content-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        #global-alert-overlay .modal-content-box p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        #global-alert-overlay .modal-content-box .btn-primary {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            color: #ffffff;
+            border: none;
+            padding: 12px 35px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #global-alert-overlay .modal-content-box .btn-primary:hover {
+            transform: translateY(-3px);
+            background: #000000;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
         /* ===== NOTIFIKASI INSTAGRAM ===== */
         .instagram-notification {
             position: fixed;
@@ -115,6 +248,7 @@
             }
         }
 
+        /* ===== MULTIPLAYER CURSOR ===== */
         .multiplayer-cursor {
             position: absolute;
             top: 0;
@@ -145,63 +279,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        #notification-container {
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        }
-
-        .notification-item {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            padding: 12px 24px;
-            border-radius: 30px;
-            box-shadow: var(--shadow-sm);
-            color: var(--text-main);
-            font-weight: 600;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            pointer-events: auto;
-        }
-
-        .notification-item .close-notif {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            transition: color 0.2s;
-        }
-
-        .notification-item .close-notif:hover {
-            color: var(--text-danger);
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px) scale(0.9);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
+        /* ===== SELECTION SCREEN ===== */
         #selection-screen {
             display: flex;
             height: 100vh;
@@ -462,6 +540,7 @@
             text-decoration: underline;
         }
 
+        /* ===== GAME SCREEN ===== */
         #game-screen {
             display: none;
             position: relative;
@@ -483,6 +562,53 @@
             --modal-bg: rgba(15, 23, 42, 0.92);
         }
 
+        /* in-game notification container (legacy, tetap dipakai untuk notifikasi di dalam game) */
+        #notification-container {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        #notification-container .notification-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-sm);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: slideDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            pointer-events: auto;
+        }
+
+        #notification-container .notification-item .close-notif {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        #notification-container .notification-item .close-notif:hover {
+            color: var(--text-danger);
+        }
+
+        /* Floating UI */
         .floating-ui {
             position: absolute;
             top: 0;
@@ -551,7 +677,7 @@
             border-color: rgba(255, 255, 255, 0.25);
         }
 
-        /* ===== COMPLETION BUTTON (GOLDEN HAMBURGER) ===== */
+        /* Completion Button */
         #completion-btn {
             display: none;
             background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -595,7 +721,6 @@
             box-shadow: 0 0 40px rgba(245, 158, 11, 0.6);
         }
 
-        /* ===== COMPLETION DROPDOWN ===== */
         .completion-dropdown {
             position: absolute;
             top: calc(100% + 10px);
@@ -883,16 +1008,6 @@
             cursor: zoom-out;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
         #full-image-modal img {
             max-width: 85vw;
             max-height: 80vh;
@@ -963,29 +1078,7 @@
             color: var(--text-main);
         }
 
-        @media (max-width: 900px) {
-            #selection-screen {
-                flex-direction: column;
-            }
-
-            .preview-section {
-                flex: 1;
-                padding: 20px;
-            }
-
-            .controls-section {
-                flex: none;
-                padding: 30px;
-                border-left: none;
-                border-top: 1px solid #e5e5e5;
-            }
-
-            .image-title {
-                font-size: 1.8rem;
-                margin-bottom: 20px;
-            }
-        }
-
+        /* Chat */
         .chat-menu {
             position: absolute;
             top: calc(100% + 10px);
@@ -1106,7 +1199,30 @@
             transform: scale(1.05);
         }
 
-        /* ===== RESPONSIVE FIX ===== */
+        /* Responsive */
+        @media (max-width: 900px) {
+            #selection-screen {
+                flex-direction: column;
+            }
+
+            .preview-section {
+                flex: 1;
+                padding: 20px;
+            }
+
+            .controls-section {
+                flex: none;
+                padding: 30px;
+                border-left: none;
+                border-top: 1px solid #e5e5e5;
+            }
+
+            .image-title {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+        }
+
         @media (max-width: 700px) {
             .top-right-wrapper {
                 gap: 8px;
@@ -1204,6 +1320,18 @@
         <button class="close-instagram" id="close-instagram-btn">&times;</button>
     </div>
 
+    <!-- ===== GLOBAL CUSTOM ALERT (di luar game) ===== -->
+    <div id="global-alert-overlay">
+        <div class="modal-content-box">
+            <h3>Pemberitahuan</h3>
+            <p id="global-alert-message">Pesan alert di sini.</p>
+            <button class="btn-primary" id="global-alert-btn">Mengerti</button>
+        </div>
+    </div>
+
+    <!-- ===== GLOBAL NOTIFICATION CONTAINER (di luar game) ===== -->
+    <div id="global-notification-container"></div>
+
     <!-- LAYAR PEMILIHAN -->
     <div id="selection-screen">
         <div class="preview-section">
@@ -1260,7 +1388,7 @@
         <!-- TOP-RIGHT WRAPPER -->
         <div class="top-right-wrapper">
 
-            <!-- COMPLETION BUTTON (muncul saat puzzle selesai) -->
+            <!-- COMPLETION BUTTON -->
             <div style="position: relative;">
                 <div class="floating-ui top-right-ui"
                     style="padding:8px; border-radius:14px; background:transparent; backdrop-filter:none; border:none; box-shadow:none;">
@@ -1301,7 +1429,6 @@
                     </div>
                 </div>
             </div>
-
 
             <!-- MENU UTAMA -->
             <div style="position: relative;">
@@ -1351,16 +1478,6 @@
                 <h3>Dukung Kami</h3>
                 <p>Terima kasih atas dukungannya</p>
                 <img src="images/qris.jpeg" alt="QRIS Donasi" class="qris-img">
-            </div>
-        </div>
-
-        <!-- CUSTOM ALERT -->
-        <div id="custom-alert-modal" class="modal-overlay">
-            <div class="modal-content-box">
-                <h3 style="margin-bottom:15px; color:var(--text-main);">Pemberitahuan</h3>
-                <p id="custom-alert-message" style="margin-bottom:25px;">Pesan alert di sini.</p>
-                <button id="custom-alert-btn" class="btn-primary"
-                    style="padding:12px 35px; font-size:1rem;">Mengerti</button>
             </div>
         </div>
 
@@ -1423,6 +1540,32 @@
 
         function generateRoomCode() { return Math.random().toString(36).substring(2, 7).toUpperCase(); }
 
+        // ===== GLOBAL NOTIFICATION (di luar game) =====
+        function showGlobalNotification(msg) {
+            const container = document.getElementById('global-notification-container');
+            if (!container) return;
+            const notif = document.createElement('div');
+            notif.className = 'global-notification-item';
+            notif.innerHTML =
+                `<span>${msg}</span><button class="close-notif"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(notif);
+            notif.querySelector('.close-notif').onclick = () => notif.remove();
+            setTimeout(() => { if (notif.parentNode) notif.remove(); }, 4000);
+        }
+
+        // ===== GLOBAL CUSTOM ALERT (di luar game) =====
+        function showGlobalAlert(message) {
+            const overlay = document.getElementById('global-alert-overlay');
+            const msgEl = document.getElementById('global-alert-message');
+            msgEl.textContent = message;
+            overlay.style.display = 'flex';
+        }
+
+        document.getElementById('global-alert-btn').addEventListener('click', () => {
+            document.getElementById('global-alert-overlay').style.display = 'none';
+        });
+
+        // ===== IN-GAME NOTIFICATION (legacy) =====
         function showNotification(msg) {
             const container = document.getElementById('notification-container');
             if (!container) return;
@@ -1480,9 +1623,6 @@
         const btnDonateGame = document.getElementById('btn-donate-game');
         const closeDonationBtn = document.getElementById('close-donation-btn');
         const donationContent = document.getElementById('donation-content');
-        const customAlertModal = document.getElementById('custom-alert-modal');
-        const customAlertMessage = document.getElementById('custom-alert-message');
-        const customAlertBtn = document.getElementById('custom-alert-btn');
         const chatToggleBtn = document.getElementById('chat-toggle-btn');
         const chatMenu = document.getElementById('chat-menu');
         const chatMessages = document.getElementById('chat-messages');
@@ -1490,7 +1630,7 @@
         const sendChatBtn = document.getElementById('send-chat-btn');
         const floatingUIs = document.querySelectorAll('.top-left-ui, .top-right-wrapper > div > .floating-ui');
 
-        // ===== COMPLETION BUTTON DOM =====
+        // Completion
         const completionBtn = document.getElementById('completion-btn');
         const completionDropdown = document.getElementById('completion-dropdown');
         const completionTimeDisplay = document.getElementById('completion-time-display');
@@ -1541,7 +1681,6 @@
             } catch (e) { }
         }
 
-        // ===================== PERBAIKAN: LOAD GAME STATE =====================
         function loadGameState() {
             try {
                 const save = localStorage.getItem('jigsawSaveState');
@@ -1628,7 +1767,6 @@
                     dragOffsets = [];
                     needsRedraw = true;
 
-                    // PERBAIKAN: Deteksi jika puzzle sudah selesai (semua group sama)
                     const firstGroupId = pieces[0]?.groupId;
                     const isCompleted = pieces.every(p => p.groupId === firstGroupId);
                     if (isCompleted) {
@@ -1655,15 +1793,8 @@
             }, 200);
         }
 
-        function showCustomAlert(message) {
-            customAlertMessage.textContent = message;
-            customAlertModal.style.display = 'flex';
-        }
-        customAlertBtn.addEventListener('click', () => { customAlertModal.style.display = 'none'; });
-
         prevBtn.addEventListener('click', () => {
-            currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) %
-                puzzleImages.length;
+            currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) % puzzleImages.length;
             updateSelectionUI();
         });
         nextBtn.addEventListener('click', () => {
@@ -1694,23 +1825,22 @@
             pieceCount = parseInt(pieceSelect.value);
             const inputPin = roomInput.value.trim().toUpperCase();
             if (inputPin !== '') {
-                // Jika memasuki room, hapus save state agar tidak bentrok
                 localStorage.removeItem('jigsawSaveState');
                 localStorage.removeItem('jigsawCustomImg');
 
                 db.ref(`rooms/${inputPin}`).once('value', (snap) => {
                     if (!snap.exists()) {
-                        showCustomAlert("Room tidak ditemukan. Periksa kembali Kode Room.");
+                        showGlobalAlert("Room tidak ditemukan. Periksa kembali Kode Room.");
                         return;
                     }
                     const roomData = snap.val();
                     if (roomData.expiresAt && Date.now() > roomData.expiresAt) {
                         db.ref(`rooms/${inputPin}`).remove();
-                        showCustomAlert("Room telah dihapus karena kosong lebih dari 5 menit.");
+                        showGlobalAlert("Room telah dihapus karena kosong lebih dari 5 menit.");
                         return;
                     }
                     if (roomData.isLocked && roomData.owner !== playerId) {
-                        showCustomAlert("Room ini merupakan private room");
+                        showGlobalAlert("Room ini merupakan private room.");
                         return;
                     }
                     db.ref(`rooms/${inputPin}/expiresAt`).remove();
@@ -1718,7 +1848,6 @@
                     proceedToGame();
                 });
             } else {
-                // Coba load save state jika ada, jika tidak buat room baru
                 if (!loadGameState()) {
                     activeRoomPin = generateRoomCode();
                     proceedToGame();
@@ -1773,7 +1902,7 @@
             exitGame('Anda keluar dari permainan.');
         });
 
-        // ===================== RESET PUZZLE (COBA LAGI) =====================
+        // ===================== RESET PUZZLE =====================
         function resetPuzzle() {
             if (pieces.length === 0) return;
 
@@ -1861,6 +1990,7 @@
                         if (!knownPlayers.includes(id) && id !== playerId) {
                             const pName = allCursors[id].name || 'Pemain';
                             showNotification(`🎮 ${pName} memasuki game`);
+                            showGlobalNotification(`🎮 ${pName} memasuki game`);
                         }
                     });
                 }
@@ -1912,7 +2042,6 @@
                     });
                     needsRedraw = true;
 
-                    // PERBAIKAN: Deteksi jika puzzle sudah selesai dari data Firebase
                     const firstGroupId = pieces[0]?.groupId;
                     const isCompleted = pieces.every(p => p.groupId === firstGroupId);
                     if (isCompleted) {
@@ -1994,6 +2123,7 @@
                     showCompletionUI(winTimeText);
                     clearInterval(timerInterval);
                     showNotification('🎉 Puzzle selesai! Klik trophy di kanan atas.');
+                    showGlobalNotification('🎉 Puzzle selesai!');
                 } else if (val === false) {
                     isGameOver = false;
                     hideCompletionUI();
@@ -2015,6 +2145,9 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 if (allowNotification && !chatMenu.classList.contains('active') && !isSelf) {
                     showNotification(
+                        `💬 ${msg.senderName}: ${msg.text.length > 20 ? msg.text.substring(0, 20) + '...' : msg.text}`
+                    );
+                    showGlobalNotification(
                         `💬 ${msg.senderName}: ${msg.text.length > 20 ? msg.text.substring(0, 20) + '...' : msg.text}`
                     );
                 }
@@ -2413,7 +2546,7 @@
             saveGameState();
         }
 
-        // ===================== RENDER (OPTIMIZED) =====================
+        // ===================== RENDER =====================
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = "rgba(100, 116, 139, 0.4)";
@@ -2470,7 +2603,6 @@
         }
 
         function onPointerDown(e) {
-            // PERBAIKAN: Izinkan drag setelah selesai dengan me-reset status game over
             if (isGameOver) {
                 isGameOver = false;
                 hideCompletionUI();
@@ -2569,6 +2701,7 @@
                         showCompletionUI(winTimeText);
                         clearInterval(timerInterval);
                         showNotification('🎉 Puzzle selesai! Klik trophy di kanan atas.');
+                        showGlobalNotification('🎉 Puzzle selesai!');
                     }
                 }
             }
@@ -2644,7 +2777,6 @@
         // ===================== CONTEXT MENU =====================
         canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            // PERBAIKAN: Izinkan klik kanan setelah selesai dengan me-reset status game over
             if (isGameOver) {
                 isGameOver = false;
                 hideCompletionUI();
@@ -2792,7 +2924,6 @@
         }
 
         // ===================== START =====================
-        // Muat state (termasuk resume room jika ada)
         if (!loadGameState()) updateSelectionUI();
         requestAnimationFrame(gameLoop);
     </script>
