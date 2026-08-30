@@ -1260,24 +1260,6 @@
         <!-- TOP-RIGHT WRAPPER -->
         <div class="top-right-wrapper">
 
-            <!-- CHAT -->
-            <div style="position: relative;">
-                <div class="floating-ui top-right-ui">
-                    <button class="hamburger-btn" id="chat-toggle-btn" title="Chat"><i
-                            class="fa-solid fa-comment-dots"></i></button>
-                </div>
-                <div class="chat-menu" id="chat-menu">
-                    <div class="chat-header">Obrolan Room</div>
-                    <div class="chat-messages" id="chat-messages"></div>
-                    <div class="chat-input-container">
-                        <input type="text" id="chat-input" class="form-control" placeholder="Ketik pesan..."
-                            autocomplete="off">
-                        <button class="btn-send-chat" id="send-chat-btn"><i
-                                class="fa-solid fa-paper-plane"></i></button>
-                    </div>
-                </div>
-            </div>
-
             <!-- COMPLETION BUTTON (muncul saat puzzle selesai) -->
             <div style="position: relative;">
                 <div class="floating-ui top-right-ui"
@@ -1301,6 +1283,25 @@
                     </button>
                 </div>
             </div>
+
+            <!-- CHAT -->
+            <div style="position: relative;">
+                <div class="floating-ui top-right-ui">
+                    <button class="hamburger-btn" id="chat-toggle-btn" title="Chat"><i
+                            class="fa-solid fa-comment-dots"></i></button>
+                </div>
+                <div class="chat-menu" id="chat-menu">
+                    <div class="chat-header">Obrolan Room</div>
+                    <div class="chat-messages" id="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" class="form-control" placeholder="Ketik pesan..."
+                            autocomplete="off">
+                        <button class="btn-send-chat" id="send-chat-btn"><i
+                                class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- MENU UTAMA -->
             <div style="position: relative;">
@@ -1509,6 +1510,7 @@
         let gameOverListener = null;
         let isGameOver = false;
         let winTimeText = '00:00';
+        let lastFirebaseSync = 0;
 
         // ===================== SAVE / LOAD STATE =====================
         function saveGameState() {
@@ -1539,6 +1541,7 @@
             } catch (e) { }
         }
 
+        // ===================== PERBAIKAN: LOAD GAME STATE =====================
         function loadGameState() {
             try {
                 const save = localStorage.getItem('jigsawSaveState');
@@ -1562,11 +1565,17 @@
                 displayRoomCode.textContent = activeRoomPin || 'Offline';
                 selectionScreen.style.display = 'none';
                 gameScreen.style.display = 'block';
+                resizeCanvas();
+                startTimer(secondsElapsed);
+
+                if (activeRoomPin) {
+                    initGame();
+                    return true;
+                }
+
                 const currentData = puzzleImages[currentImageIndex];
                 thumbImg.src = currentData.url;
                 fullPreviewImg.src = currentData.url;
-                resizeCanvas();
-                startTimer(secondsElapsed);
                 imgObj = new Image();
                 imgObj.src = currentData.url;
                 imgObj.onload = () => {
@@ -1618,9 +1627,18 @@
                     activePieces = [];
                     dragOffsets = [];
                     needsRedraw = true;
-                    if (activeRoomPin) joinMultiplayerRoom();
-                    // sembunyikan completion button saat load
-                    hideCompletionUI();
+
+                    // PERBAIKAN: Deteksi jika puzzle sudah selesai (semua group sama)
+                    const firstGroupId = pieces[0]?.groupId;
+                    const isCompleted = pieces.every(p => p.groupId === firstGroupId);
+                    if (isCompleted) {
+                        isGameOver = true;
+                        winTimeText = timerEl.textContent;
+                        showCompletionUI(winTimeText);
+                        clearInterval(timerInterval);
+                    } else {
+                        hideCompletionUI();
+                    }
                 };
                 return true;
             } catch (e) { return false; }
@@ -1645,7 +1663,7 @@
 
         prevBtn.addEventListener('click', () => {
             currentImageIndex = (currentImageIndex - 1 + puzzleImages.length) %
-            puzzleImages.length;
+                puzzleImages.length;
             updateSelectionUI();
         });
         nextBtn.addEventListener('click', () => {
@@ -1676,10 +1694,14 @@
             pieceCount = parseInt(pieceSelect.value);
             const inputPin = roomInput.value.trim().toUpperCase();
             if (inputPin !== '') {
+                // Jika memasuki room, hapus save state agar tidak bentrok
+                localStorage.removeItem('jigsawSaveState');
+                localStorage.removeItem('jigsawCustomImg');
+
                 db.ref(`rooms/${inputPin}`).once('value', (snap) => {
                     if (!snap.exists()) {
-                        showCustomAlert(
-                            "Room tidak ditemukan. Periksa kembali Kode Room."); return;
+                        showCustomAlert("Room tidak ditemukan. Periksa kembali Kode Room.");
+                        return;
                     }
                     const roomData = snap.val();
                     if (roomData.expiresAt && Date.now() > roomData.expiresAt) {
@@ -1696,8 +1718,11 @@
                     proceedToGame();
                 });
             } else {
-                activeRoomPin = generateRoomCode();
-                proceedToGame();
+                // Coba load save state jika ada, jika tidak buat room baru
+                if (!loadGameState()) {
+                    activeRoomPin = generateRoomCode();
+                    proceedToGame();
+                }
             }
         });
 
@@ -1705,7 +1730,6 @@
             displayRoomCode.textContent = activeRoomPin;
             selectionScreen.style.display = 'none';
             gameScreen.style.display = 'block';
-            // sembunyikan completion button di awal
             hideCompletionUI();
             initGame();
         }
@@ -1715,7 +1739,6 @@
             completionTimeDisplay.textContent = `Waktu: ${timeStr || timerEl.textContent}`;
             completionBtn.style.display = 'flex';
             completionBtn.style.animation = 'glowPulse 1.5s ease-in-out infinite alternate';
-            // sembunyikan dropdown saat tombol muncul
             completionDropdown.classList.remove('active');
         }
 
@@ -1728,28 +1751,23 @@
         function toggleCompletionDropdown(e) {
             e.stopPropagation();
             completionDropdown.classList.toggle('active');
-            // tutup menu lain
             dropdownMenu.classList.remove('active');
             chatMenu.classList.remove('active');
         }
 
-        // klik tombol completion
         completionBtn.addEventListener('click', toggleCompletionDropdown);
 
-        // klik di luar untuk tutup dropdown completion
         document.addEventListener('mousedown', (e) => {
             if (!e.target.closest('#completion-btn') && !e.target.closest('.completion-dropdown')) {
                 completionDropdown.classList.remove('active');
             }
         });
 
-        // ===== COBA LAGI =====
         completionRetryBtn.addEventListener('click', () => {
             completionDropdown.classList.remove('active');
             resetPuzzle();
         });
 
-        // ===== KELUAR =====
         completionExitBtn.addEventListener('click', () => {
             completionDropdown.classList.remove('active');
             exitGame('Anda keluar dari permainan.');
@@ -1759,33 +1777,27 @@
         function resetPuzzle() {
             if (pieces.length === 0) return;
 
-            // Reset timer
             clearInterval(timerInterval);
             secondsElapsed = 0;
             updateTimerDisplay();
 
-            // Shuffle semua pieces: setiap piece jadi group sendiri, posisi acak
             const cols = Math.round(Math.sqrt(pieceCount));
             const rows = Math.ceil(pieceCount / cols);
             const pieceW = boardWidth / cols;
             const pieceH = boardHeight / rows;
 
             pieces.forEach(p => {
-                // reset groupId ke id sendiri
                 p.groupId = p.id;
-                // posisi acak di area kanvas
                 const margin = 30;
                 const maxX = canvas.width - pieceW - margin;
                 const maxY = canvas.height - pieceH - margin;
                 p.currentX = margin + Math.random() * (maxX - margin);
                 p.currentY = 100 + Math.random() * (maxY - 100);
-                // update path (ukuran bisa berubah jika jumlah piece berubah)
                 p.pieceW = pieceW;
                 p.pieceH = pieceH;
                 p.path = createPiecePath(pieceW, pieceH, p.edges);
             });
 
-            // acak urutan pieces
             pieces.sort(() => Math.random() - 0.5);
 
             isGameOver = false;
@@ -1793,13 +1805,9 @@
             needsRedraw = true;
             saveGameState();
 
-            // Update Firebase jika multiplayer
             if (activeRoomPin && roomRef) {
-                // reset startTime
                 roomRef.child('startTime').set(Date.now());
-                // set gameOver ke false
                 roomRef.child('gameOver').set(false);
-                // update semua pieces
                 const updates = {};
                 pieces.forEach(p => {
                     updates[`pieces/${p.id}`] = {
@@ -1815,7 +1823,6 @@
                 showNotification('🔄 Puzzle di-reset!');
             }
 
-            // Reset timer display di UI
             timerEl.textContent = '00:00';
         }
 
@@ -1904,6 +1911,19 @@
                         }
                     });
                     needsRedraw = true;
+
+                    // PERBAIKAN: Deteksi jika puzzle sudah selesai dari data Firebase
+                    const firstGroupId = pieces[0]?.groupId;
+                    const isCompleted = pieces.every(p => p.groupId === firstGroupId);
+                    if (isCompleted) {
+                        isGameOver = true;
+                        winTimeText = timerEl.textContent;
+                        showCompletionUI(winTimeText);
+                        clearInterval(timerInterval);
+                    } else {
+                        isGameOver = false;
+                        hideCompletionUI();
+                    }
                 } else {
                     roomRef.child('owner').set(playerId);
                     roomRef.child('isLocked').set(true);
@@ -1969,7 +1989,8 @@
                 if (val === true && !isGameOver) {
                     isGameOver = true;
                     winTimeText = timerEl.textContent;
-                    // tampilkan completion button (bukan modal)
+                    activePieces = [];
+                    dragOffsets = [];
                     showCompletionUI(winTimeText);
                     clearInterval(timerInterval);
                     showNotification('🎉 Puzzle selesai! Klik trophy di kanan atas.');
@@ -1981,6 +2002,7 @@
 
             roomRef.child('chat').off('child_added');
             chatMessages.innerHTML = '';
+            let renderChatMessage;
             renderChatMessage = function (msg, allowNotification) {
                 const isSelf = msg.senderId === playerId;
                 const msgEl = document.createElement('div');
@@ -1997,7 +2019,6 @@
                     );
                 }
             };
-            let renderChatMessage;
             roomRef.child('chat').once('value', (snap) => {
                 const loadedChatKeys = new Set();
                 snap.forEach((child) => {
@@ -2028,6 +2049,7 @@
             chatMenu.classList.remove('active');
             completionDropdown.classList.remove('active');
             localStorage.removeItem('jigsawSaveState');
+            localStorage.removeItem('jigsawCustomImg');
 
             floatingUIs.forEach(ui => {
                 ui.style.transform = 'translate(0, 0)';
@@ -2250,6 +2272,17 @@
                     setupPuzzleAndScatter();
                     joinMultiplayerRoom();
                 };
+                imgObj.onerror = function () {
+                    showNotification('Gagal memuat gambar dari room!');
+                    const currentData = puzzleImages[currentImageIndex];
+                    imgObj.src = currentData.url;
+                    imgObj.onload = function () {
+                        thumbImg.src = currentData.url;
+                        fullPreviewImg.src = currentData.url;
+                        setupPuzzleAndScatter();
+                        joinMultiplayerRoom();
+                    };
+                };
                 imgObj.src = url;
             }
 
@@ -2261,8 +2294,13 @@
                         startGameWithImage(dataUrl);
                     } else {
                         const currentData = puzzleImages[currentImageIndex];
-                        tempRef.set(currentData.url);
-                        startGameWithImage(currentData.url);
+                        tempRef.set(currentData.url).then(() => {
+                            startGameWithImage(currentData.url);
+                        }).catch((err) => {
+                            console.error('Gagal menyimpan imageData:', err);
+                            showNotification('Gagal menyimpan gambar ke room!');
+                            startGameWithImage(currentData.url);
+                        });
                     }
                 });
             } else {
@@ -2375,7 +2413,7 @@
             saveGameState();
         }
 
-        // ===================== RENDER =====================
+        // ===================== RENDER (OPTIMIZED) =====================
         function render() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = "rgba(100, 116, 139, 0.4)";
@@ -2385,25 +2423,33 @@
             ctx.setLineDash([]);
 
             for (let p of pieces) {
+                if (activePieces.some(ap => ap.id === p.id)) continue;
                 ctx.save();
-                let isDragging = activePieces.find(ap => ap.id === p.id);
                 ctx.translate(p.currentX, p.currentY);
-                if (isDragging) {
-                    ctx.shadowColor = "rgba(0,0,0,0.5)";
-                    ctx.shadowBlur = 15;
-                    ctx.shadowOffsetX = 8;
-                    ctx.shadowOffsetY = 8;
-                    ctx.fillStyle = "#fff";
-                    ctx.fill(p.path);
-                }
-                ctx.save();
                 ctx.clip(p.path);
                 ctx.drawImage(imgObj, -p.c * p.pieceW, -p.r * p.pieceH, boardWidth, boardHeight);
                 ctx.restore();
                 ctx.lineWidth = 1.2;
                 ctx.strokeStyle = "rgba(0, 0, 0, 0.35)";
                 ctx.stroke(p.path);
+            }
+
+            for (let p of activePieces) {
+                ctx.save();
+                ctx.translate(p.currentX, p.currentY);
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetX = 8;
+                ctx.shadowOffsetY = 8;
+                ctx.fillStyle = "#fff";
+                ctx.fill(p.path);
+                ctx.shadowColor = "transparent";
+                ctx.clip(p.path);
+                ctx.drawImage(imgObj, -p.c * p.pieceW, -p.r * p.pieceH, boardWidth, boardHeight);
                 ctx.restore();
+                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = "rgba(0, 0, 0, 0.35)";
+                ctx.stroke(p.path);
             }
         }
 
@@ -2424,6 +2470,11 @@
         }
 
         function onPointerDown(e) {
+            // PERBAIKAN: Izinkan drag setelah selesai dengan me-reset status game over
+            if (isGameOver) {
+                isGameOver = false;
+                hideCompletionUI();
+            }
             if (e.target.closest('.floating-ui') ||
                 e.target.closest('.dropdown-menu') ||
                 e.target.closest('.chat-menu') ||
@@ -2443,7 +2494,7 @@
                     break;
                 }
             }
-            if (clickedPiece && !isGameOver) {
+            if (clickedPiece) {
                 activePieces = pieces.filter(p => p.groupId === clickedPiece.groupId);
                 pieces = pieces.filter(p => p.groupId !== clickedPiece.groupId).concat(activePieces);
                 dragOffsets = activePieces.map(p => ({ id: p.id, dx: pos.x - p.currentX, dy: pos.y - p.currentY }));
@@ -2451,10 +2502,8 @@
             }
         }
 
-        let lastPieceMove = 0;
-
         function onPointerMove(e) {
-            if (activePieces.length === 0 || isGameOver) return;
+            if (activePieces.length === 0) return;
             const pos = getPointerPos(e);
             let minNewX = Infinity,
                 minNewY = Infinity,
@@ -2480,9 +2529,9 @@
 
             const now = Date.now();
             let shouldUpdateFirebase = false;
-            if (now - lastPieceMove > 40) {
+            if (now - lastFirebaseSync > 100) {
                 shouldUpdateFirebase = true;
-                lastPieceMove = now;
+                lastFirebaseSync = now;
             }
 
             activePieces.forEach(p => {
@@ -2490,15 +2539,21 @@
                 if (offset) {
                     p.currentX = pos.x - offset.dx + shiftX;
                     p.currentY = pos.y - offset.dy + shiftY;
-                    if (activeRoomPin && roomRef && shouldUpdateFirebase) {
-                        roomRef.child(`pieces/${p.id}`).update({
-                            rx: (p.currentX - boardX) / boardWidth,
-                            ry: (p.currentY - boardY) / boardHeight,
-                            groupId: p.groupId
-                        });
-                    }
                 }
             });
+
+            if (activeRoomPin && roomRef && shouldUpdateFirebase) {
+                const updates = {};
+                activePieces.forEach(p => {
+                    updates[`pieces/${p.id}`] = {
+                        rx: (p.currentX - boardX) / boardWidth,
+                        ry: (p.currentY - boardY) / boardHeight,
+                        groupId: p.groupId
+                    };
+                });
+                roomRef.update(updates);
+            }
+
             needsRedraw = true;
         }
 
@@ -2511,7 +2566,6 @@
                     if (activeRoomPin && roomRef) {
                         roomRef.child('gameOver').set(true);
                     } else {
-                        // Single player: tampilkan completion button
                         showCompletionUI(winTimeText);
                         clearInterval(timerInterval);
                         showNotification('🎉 Puzzle selesai! Klik trophy di kanan atas.');
@@ -2521,7 +2575,7 @@
         }
 
         function onPointerUp() {
-            if (activePieces.length === 0 || isGameOver) return;
+            if (activePieces.length === 0) return;
             const snapTolerance = 25;
             let snapped = false;
             let shiftX = 0,
@@ -2560,15 +2614,17 @@
                 });
 
                 if (activeRoomPin && roomRef) {
+                    const updates = {};
                     pieces.forEach(p => {
                         if (p.groupId === targetGroupId && p.groupId !== draggedGroupId) {
-                            roomRef.child(`pieces/${p.id}`).update({
+                            updates[`pieces/${p.id}`] = {
                                 rx: (p.currentX - boardX) / boardWidth,
                                 ry: (p.currentY - boardY) / boardHeight,
                                 groupId: p.groupId
-                            });
+                            };
                         }
                     });
+                    roomRef.update(updates);
                 }
                 activePieces = [];
                 dragOffsets = [];
@@ -2588,7 +2644,11 @@
         // ===================== CONTEXT MENU =====================
         canvas.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            if (isGameOver) return;
+            // PERBAIKAN: Izinkan klik kanan setelah selesai dengan me-reset status game over
+            if (isGameOver) {
+                isGameOver = false;
+                hideCompletionUI();
+            }
             const pos = getPointerPos(e);
             let clickedPiece = null;
             for (let i = pieces.length - 1; i >= 0; i--) {
@@ -2732,6 +2792,7 @@
         }
 
         // ===================== START =====================
+        // Muat state (termasuk resume room jika ada)
         if (!loadGameState()) updateSelectionUI();
         requestAnimationFrame(gameLoop);
     </script>
